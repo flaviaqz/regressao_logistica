@@ -1,0 +1,2189 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-BR" xml:lang="pt-BR"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Profa. Flávia Queiroz">
+
+<title>Introdução a Regressão logística: fundamentos e aplicações</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="APLogistica_files/libs/clipboard/clipboard.min.js"></script>
+<script src="APLogistica_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="APLogistica_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="APLogistica_files/libs/quarto-html/popper.min.js"></script>
+<script src="APLogistica_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="APLogistica_files/libs/quarto-html/anchor.min.js"></script>
+<link href="APLogistica_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="APLogistica_files/libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="APLogistica_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="APLogistica_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="APLogistica_files/libs/bootstrap/bootstrap-d7a6c2cf76d12a63d7a00478dc4f37b1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<style>html{ scroll-behavior: smooth; }</style>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="estilo.css">
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Índice</h2>
+   
+  <ul>
+  <li><a href="#apresentação" id="toc-apresentação" class="nav-link active" data-scroll-target="#apresentação"><span class="header-section-number">1</span> APRESENTAÇÃO</a>
+  <ul class="collapse">
+  <li><a href="#objetivos-de-aprendizagem" id="toc-objetivos-de-aprendizagem" class="nav-link" data-scroll-target="#objetivos-de-aprendizagem"><span class="header-section-number">1.1</span> Objetivos de aprendizagem:</a></li>
+  </ul></li>
+  <li><a href="#regressão-logística" id="toc-regressão-logística" class="nav-link" data-scroll-target="#regressão-logística"><span class="header-section-number">2</span> Regressão logística</a>
+  <ul class="collapse">
+  <li><a href="#modelos-lineares-generalizados" id="toc-modelos-lineares-generalizados" class="nav-link" data-scroll-target="#modelos-lineares-generalizados"><span class="header-section-number">2.1</span> Modelos Lineares Generalizados</a>
+  <ul class="collapse">
+  <li><a href="#estrutura-dos-modelos-lineares-generalizados" id="toc-estrutura-dos-modelos-lineares-generalizados" class="nav-link" data-scroll-target="#estrutura-dos-modelos-lineares-generalizados"><span class="header-section-number">2.1.1</span> Estrutura dos modelos lineares generalizados</a></li>
+  </ul></li>
+  <li><a href="#regressão-logística-binária" id="toc-regressão-logística-binária" class="nav-link" data-scroll-target="#regressão-logística-binária"><span class="header-section-number">2.2</span> Regressão logística binária</a></li>
+  <li><a href="#estimação-dos-parâmetros-no-glm" id="toc-estimação-dos-parâmetros-no-glm" class="nav-link" data-scroll-target="#estimação-dos-parâmetros-no-glm"><span class="header-section-number">2.3</span> Estimação dos parâmetros no <code>glm()</code></a></li>
+  </ul></li>
+  <li><a href="#exemplo-1-breast-cancer-wisconsin" id="toc-exemplo-1-breast-cancer-wisconsin" class="nav-link" data-scroll-target="#exemplo-1-breast-cancer-wisconsin"><span class="header-section-number">3</span> EXEMPLO 1 (Breast Cancer Wisconsin)</a>
+  <ul class="collapse">
+  <li><a href="#leitura-da-base-de-dados" id="toc-leitura-da-base-de-dados" class="nav-link" data-scroll-target="#leitura-da-base-de-dados"><span class="header-section-number">3.1</span> Leitura da base de dados</a></li>
+  <li><a href="#dispersão-dos-dados" id="toc-dispersão-dos-dados" class="nav-link" data-scroll-target="#dispersão-dos-dados"><span class="header-section-number">3.2</span> Dispersão dos dados</a></li>
+  <li><a href="#ajuste-do-modelo-logístico-simples" id="toc-ajuste-do-modelo-logístico-simples" class="nav-link" data-scroll-target="#ajuste-do-modelo-logístico-simples"><span class="header-section-number">3.3</span> Ajuste do modelo logístico simples</a></li>
+  <li><a href="#coeficiente-chances-e-razão-de-chances" id="toc-coeficiente-chances-e-razão-de-chances" class="nav-link" data-scroll-target="#coeficiente-chances-e-razão-de-chances"><span class="header-section-number">3.4</span> Coeficiente, chances e razão de chances</a></li>
+  <li><a href="#comparação-entre-tumores-com-diferentes-cell.size" id="toc-comparação-entre-tumores-com-diferentes-cell.size" class="nav-link" data-scroll-target="#comparação-entre-tumores-com-diferentes-cell.size"><span class="header-section-number">3.5</span> Comparação entre tumores com diferentes <code>Cell.size</code></a></li>
+  </ul></li>
+  <li><a href="#exemplo-2-regressão-logística-múltipla" id="toc-exemplo-2-regressão-logística-múltipla" class="nav-link" data-scroll-target="#exemplo-2-regressão-logística-múltipla"><span class="header-section-number">4</span> EXEMPLO 2 (Regressão Logística Múltipla)</a>
+  <ul class="collapse">
+  <li><a href="#análise-descritiva" id="toc-análise-descritiva" class="nav-link" data-scroll-target="#análise-descritiva"><span class="header-section-number">4.1</span> Análise descritiva</a>
+  <ul class="collapse">
+  <li><a href="#separação-em-treino-e-teste" id="toc-separação-em-treino-e-teste" class="nav-link" data-scroll-target="#separação-em-treino-e-teste"><span class="header-section-number">4.1.1</span> Separação em treino e teste</a></li>
+  </ul></li>
+  <li><a href="#ajuste-do-modelo-de-regressão-logística-múltipla" id="toc-ajuste-do-modelo-de-regressão-logística-múltipla" class="nav-link" data-scroll-target="#ajuste-do-modelo-de-regressão-logística-múltipla"><span class="header-section-number">4.2</span> Ajuste do modelo de regressão logística múltipla</a></li>
+  <li><a href="#seleção-de-variáveis" id="toc-seleção-de-variáveis" class="nav-link" data-scroll-target="#seleção-de-variáveis"><span class="header-section-number">4.3</span> Seleção de variáveis</a>
+  <ul class="collapse">
+  <li><a href="#seleção-de-variáveis-pelo-procedimento-stepwise" id="toc-seleção-de-variáveis-pelo-procedimento-stepwise" class="nav-link" data-scroll-target="#seleção-de-variáveis-pelo-procedimento-stepwise"><span class="header-section-number">4.3.1</span> Seleção de variáveis pelo procedimento Stepwise</a></li>
+  <li><a href="#teste-deviance---anova" id="toc-teste-deviance---anova" class="nav-link" data-scroll-target="#teste-deviance---anova"><span class="header-section-number">4.3.2</span> Teste Deviance - anova()</a></li>
+  </ul></li>
+  <li><a href="#odds-ratio-e-ic-95" id="toc-odds-ratio-e-ic-95" class="nav-link" data-scroll-target="#odds-ratio-e-ic-95"><span class="header-section-number">4.4</span> Odds Ratio e IC 95%</a></li>
+  <li><a href="#pseudo-r²" id="toc-pseudo-r²" class="nav-link" data-scroll-target="#pseudo-r²"><span class="header-section-number">4.5</span> Pseudo R²</a></li>
+  <li><a href="#teste-de-hosmer-lemeshow-qualidade-do-ajuste" id="toc-teste-de-hosmer-lemeshow-qualidade-do-ajuste" class="nav-link" data-scroll-target="#teste-de-hosmer-lemeshow-qualidade-do-ajuste"><span class="header-section-number">4.6</span> Teste de Hosmer-Lemeshow (qualidade do ajuste)</a></li>
+  <li><a href="#curva-roc-e-auc" id="toc-curva-roc-e-auc" class="nav-link" data-scroll-target="#curva-roc-e-auc"><span class="header-section-number">4.7</span> Curva ROC e AUC</a>
+  <ul class="collapse">
+  <li><a href="#seleção-do-ponto-de-corte" id="toc-seleção-do-ponto-de-corte" class="nav-link" data-scroll-target="#seleção-do-ponto-de-corte"><span class="header-section-number">4.7.1</span> Seleção do ponto de corte</a></li>
+  </ul></li>
+  <li><a href="#matriz-de-confusão" id="toc-matriz-de-confusão" class="nav-link" data-scroll-target="#matriz-de-confusão"><span class="header-section-number">4.8</span> Matriz de Confusão</a></li>
+  <li><a href="#teste-de-kolmogorovsmirnov-ks" id="toc-teste-de-kolmogorovsmirnov-ks" class="nav-link" data-scroll-target="#teste-de-kolmogorovsmirnov-ks"><span class="header-section-number">4.9</span> Teste de Kolmogorov–Smirnov (KS)</a></li>
+  </ul></li>
+  <li><a href="#referências" id="toc-referências" class="nav-link" data-scroll-target="#referências">REFERÊNCIAS</a></li>
+  </ul>
+</nav>
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Introdução a Regressão logística: fundamentos e aplicações</h1>
+<p class="subtitle lead">GED-16 / PO-216: Análise de Regressão</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Autor</div>
+    <div class="quarto-title-meta-contents">
+             <p>Profa. Flávia Queiroz </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Data de Publicação</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">2o. semestre / 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="links-autora" aria-label="Links da professora">
+<p><a href="mailto:flavia.queiroz@gp.ita.br" aria-label="Enviar e-mail para Profa. Flávia Queiroz" title="flavia.queiroz@gp.ita.br"> <svg viewbox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m4 7 8 6 8-6"></path></svg><span>E-mail</span> </a> <a href="http://lattes.cnpq.br/0360083371873113" target="_blank" rel="noopener" aria-label="Currículo Lattes de Flávia Queiroz" title="Currículo Lattes"> <svg viewbox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3"></circle><circle cx="6" cy="17" r="3"></circle><circle cx="18" cy="17" r="3"></circle><path d="m10.5 9.5-3 5m6 0-3-5m-1.5 7.5h6"></path></svg><span>Lattes</span> </a> <a href="https://sites.google.com/gp.ita.br/lio/home" target="_blank" rel="noopener" aria-label="Laboratório ITALIO" title="Laboratório ITALIO"> <svg viewbox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 20V8h12v12M9 8V4h6v4M9 12h2m2 0h2m-6 4h2m2 0h2"></path></svg><span>ITALIO</span> </a></p>
+</div>
+<section id="apresentação" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> APRESENTAÇÃO</h1>
+<p>Em muitos problemas de interesse científico, a variável resposta não é contínua. Ela pode indicar, por exemplo, a ocorrência de uma falha (sim ou não), a necessidade de inspeção (sim ou não), a presença de uma doença (presente ou ausente) ou a adesão a um tratamento (sim ou não).</p>
+<p>Quando há dois resultados possíveis, a resposta é categórica binária e pode ser representada por uma variável de Bernoulli. Nesses casos, define-se qual resultado representa o evento de interesse (o sucesso) e tem-se:</p>
+<p><span class="math display">\[
+Y = \begin{cases}
+1, &amp; \text{se ocorrer sucesso com probabilidade } p \\
+0, &amp; \text{se ocorrer fracasso com probabilidade } 1 - p
+\end{cases}
+\]</span></p>
+<p>Sabemos que a regressão linear modela a média condicional de <span class="math inline">\(Y\)</span> dado <span class="math inline">\(x\)</span> em uma reta, <span class="math display">\[E(Y\mid X=x)=\beta_0+\beta_1x.\]</span> Como <span class="math inline">\(Y\)</span> tem distribuição de Bernoulli, essa função média é também a probabilidade de sucesso: <span class="math display">\[E(Y\mid X=x)=P(Y=1\mid X=x).\]</span></p>
+<p>A <a href="#fig-regressao-logistica-intro" class="quarto-xref">Figura&nbsp;1.1</a> apresenta o ajuste de uma regressão linear simples e de uma curva em formato de “S” (Sigmoide), estritamente limitada no eixo vertical entre os valores 0 e 1. Os pontos representam observações e as curvas mostram as probabilidades estimadas pelos dois modelos.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-regressao-logistica-intro" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-regressao-logistica-intro-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="APLogistica_files/figure-html/fig-regressao-logistica-intro-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-regressao-logistica-intro-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;1.1: Ajustes linear e logístico para a probabilidade de presença de uma doença
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Uma probabilidade precisa estar entre 0 e 1, mas a reta não impõe a restrição para os intervalos, podendo gerar valores inválidos. Além disso, a variância de uma resposta binária depende da probabilidade, enquanto a regressão linear assume variância constante; por isso, seus erros-padrão e testes podem ser inadequados.</p>
+<p>Já a curva azul representa uma regressão logística para resposta binária, onde Y=1 indica a presença da doença e Y=0 a sua ausência. Com formato em ‘S’, ela mantém as probabilidades estimadas entre 0 e 1 para garantir estimativas de probabilidade válidas. Assim, valores muito baixos das variáveis preditoras indicam probabilidade quase nula da doença (próximo a 0), enquanto valores muito altos apontam para probabilidade quase certa (próximo a 1), com uma aceleração rápida na região central de transição.</p>
+<p>O Capítulo 2 apresenta os fundamentos dos modelos lineares generalizados e da regressão logística. Maiores detalhes sobre os tópicos aqui considerados podem ser vistos nas referências indicadas ao final desse arquivo. Na sequência, o Capítulo 3 ilustra o processo de ajuste e a interpretação de parâmetros por meio de um exemplo prático univariado. Por fim, o Capítulo 4 aprofunda o tema com a análise de uma base de dados sobre diabetes tipo 2, critérios de comparação entre modelos e métricas de desempenho preditivo.</p>
+<section id="objetivos-de-aprendizagem" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="objetivos-de-aprendizagem"><span class="header-section-number">1.1</span> Objetivos de aprendizagem:</h2>
+<ol type="1">
+<li>Compreender a fundamentação teórica do modelo, identificando como se estruturam a distribuição de Bernoulli, o preditor linear e a função de ligação logito.</li>
+<li>Implementar e ajustar modelos de regressão logística no R.</li>
+<li>Interpretar os resultados do modelo, traduzindo coeficientes em termos de chances, razões de chances (odds ratios) e probabilidades estimadas.</li>
+<li>Validar o desempenho e a adequação do modelo ajustado.</li>
+</ol>
+</section>
+</section>
+<section id="regressão-logística" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Regressão logística</h1>
+<p>A regressão linear usual é formulada para uma resposta quantitativa contínua cujo comportamento condicional é descrito por uma distribuição normal, com variância constante. Essa formulação não é adequada para uma resposta binária (<span class="math inline">\(0/1\)</span>), uma vez que a natureza discreta dos dados gera resíduos sem distribuição normal e com variância não-constante (heteroscedasticidade). Além disso, para uma resposta com distribuição de Bernoulli, a variância não é constante, pois depende diretamente da probabilidade estimada através de <span class="math inline">\(\operatorname{Var}(Y_i\mid\mathbf{x}_i)=\pi_i(1-\pi_i)\)</span>.</p>
+<p>Para contornar essas limitações, utiliza-se uma classe mais ampla de modelos, denominada Modelos Lineares Generalizados (MLG), que permite acomodar diferentes distribuições para a variável resposta e relacionar sua média a um preditor linear por meio de funções de ligação apropriadas. A regressão logística é um caso particular dessa classe de modelos.</p>
+<section id="modelos-lineares-generalizados" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="modelos-lineares-generalizados"><span class="header-section-number">2.1</span> Modelos Lineares Generalizados</h2>
+<p>Os modelos lineares generalizados ampliam a estrutura da regressão ao permitir distribuições da resposta apropriadas ao problema e uma função de ligação que conecta sua média condicional a um preditor linear. Assim, mantemos uma combinação linear das covariáveis na escala do preditor, mas podemos modelar médias que respeitam o espaço de valores da resposta. De forma geral, a estrutura de um MLG pode ser escrita como</p>
+<p><span class="math display">\[
+Y_i\mid\mathbf{x}_i \sim \mathcal{F}(\mu_i,\phi),
+\qquad
+g(\mu_i)=\eta_i=\beta_0+\sum_{j=1}^{p}\beta_jx_{ij}.
+\]</span></p>
+<p>Nessa expressão, <span class="math inline">\(\mathcal{F}\)</span> representa a distribuição da resposta, <span class="math inline">\(\mu_i=E(Y_i\mid\mathbf{x}_i)\)</span> é sua média condicional, <span class="math inline">\(\phi\)</span> representa um parâmetro de dispersão quando necessário, <span class="math inline">\(g\)</span> é a função de ligação e <span class="math inline">\(\eta_i\)</span> é o preditor linear, formado pelas variáveis explicativas <span class="math inline">\(x_{ij}\)</span> e pelos parâmetros <span class="math inline">\(\beta_j\)</span>.</p>
+<p>Na regressão logística, a variável resposta é binária e segue uma distribuição de Bernoulli (caso particular da distribuição binomial) e a função de ligação mais utilizada é o logito. Embora a variável resposta seja categórica, as variáveis explicativas podem ser contínuas, categóricas ou mistas.</p>
+<p>Por exemplo, na regressão logística é perfeitamente natural modelar <span class="math inline">\(P(Doenca=="Sim")\)</span> a partir das covariáveis idade (quantitativa), pressão arterial (quantitativa), sexo (categórica).</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Nota</span>Observação
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A ligação logito é a mais utilizada para variáveis resposta binárias, mas não é a única opção. Outras funções de ligação também podem ser empregadas para variáveis resposta binárias:</p>
+<ul>
+<li>probit: assume que a probabilidade de sucesso está associada à função de distribuição acumulada da normal padrão. É frequentemente utilizado quando existe uma justificativa teórica para supor a presença de uma variável latente com comportamento aproximadamente normal, como em estudos de aptidão, preferência ou propensão à escolha.</li>
+<li>complementary log-log (cloglog): produz uma relação assimétrica entre a probabilidade e o preditor linear, sendo particularmente útil quando eventos raros são de interesse, como a ocorrência de falhas em equipamentos ou o desenvolvimento de uma determinada doença em uma população.</li>
+</ul>
+</div>
+</div>
+<!---
+Na prática, os resultados obtidos com as ligações logito e probito costumam ser bastante semelhantes. A escolha da ligação depende principalmente da interpretação desejada e das características do problema analisado. ~
+
+A ideia de variável latente no probit é justamente que existe uma característica não observável que determina o resultado observado.
+
+Por exemplo, suponha que você esteja modelando a variável:Aprovação em um concurso (1 = aprovado; 0 = reprovado).
+
+O que observamos é apenas "aprovou" ou "não aprovou". Entretanto, pode-se imaginar que existe uma variável contínua não observada, como um nível de proficiência, que varia entre os candidatos. Quando essa proficiência ultrapassa um determinado limiar, ocorre a aprovação. O modelo probit assume que essa variável latente segue aproximadamente uma distribuição normal.
+
+Nesse caso, a principal diferença está menos na interpretação dos coeficientes e mais na história probabilística subjacente ao modelo. O probit é frequentemente adotado quando essa hipótese de uma variável latente normal faz sentido teoricamente.
+--->
+<section id="estrutura-dos-modelos-lineares-generalizados" class="level3" data-number="2.1.1">
+<h3 data-number="2.1.1" class="anchored" data-anchor-id="estrutura-dos-modelos-lineares-generalizados"><span class="header-section-number">2.1.1</span> Estrutura dos modelos lineares generalizados</h3>
+<p>Um MLG reúne três elementos:</p>
+<ol type="i">
+<li><p>o <strong>componente aleatório</strong>, que especifica a distribuição condicional da resposta;</p></li>
+<li><p>o <strong>componente sistemático</strong>, o preditor linear que combina as variáveis explicativas em <span class="math display">\[\eta_i=\beta_0+\beta_1x_{i1}+\cdots+\beta_px_{ip};\]</span> e</p></li>
+<li><p>a <strong>função de ligação</strong>, que relaciona a média condicional da resposta <span class="math inline">\(\mu_i=E(Y_i\mid\mathbf{x}_i)\)</span> ao preditor linear por <span class="math inline">\(g(\mu_i)=\eta_i\)</span>.</p></li>
+</ol>
+<p>A Tabela <a href="#tbl-mlg" class="quarto-xref">Tabela&nbsp;2.1</a> contrasta esses elementos em três modelos de uso frequente.</p>
+<div id="tbl-mlg" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-mlg-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tabela&nbsp;2.1: Elementos dos modelos lineares generalizados em três aplicações usuais.
+</figcaption>
+<div aria-describedby="tbl-mlg-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Modelo</th>
+<th style="text-align: left;">Componente aleatório</th>
+<th style="text-align: left;">Componente sistemático</th>
+<th style="text-align: left;">Função de ligação</th>
+<th style="text-align: left;">Tipo de resposta</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Regressão linear normal</td>
+<td style="text-align: left;"><span class="math inline">\(Y_i\mid\mathbf{x}_i\sim N(\mu_i,\sigma^2)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\eta_i=\mathbf{x}_i^\mathsf{T}\boldsymbol\beta\)</span></td>
+<td style="text-align: left;">Identidade: <br> <span class="math inline">\(\mu_i=\eta_i\)</span></td>
+<td style="text-align: left;">Quantitativa contínua</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Regressão logística binária</td>
+<td style="text-align: left;"><span class="math inline">\(Y_i\mid\mathbf{x}_i\sim\operatorname{Bernoulli}(\pi_i)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\eta_i=\mathbf{x}_i^\mathsf{T}\boldsymbol\beta\)</span></td>
+<td style="text-align: left;">Logito: <br> <span class="math inline">\(\log\left(\frac{\pi_i}{1-\pi_i}\right)=\eta_i\)</span></td>
+<td style="text-align: left;">Binária</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Regressão de Poisson</td>
+<td style="text-align: left;"><span class="math inline">\(Y_i\mid\mathbf{x}_i\sim\operatorname{Poisson}(\mu_i)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\eta_i=\mathbf{x}_i^\mathsf{T}\boldsymbol\beta\)</span></td>
+<td style="text-align: left;">Logarítmica: <br> <span class="math inline">\(\log(\mu_i)=\eta_i\)</span></td>
+<td style="text-align: left;">Contagem</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>O termo “linear” refere-se à forma linear do preditor linear <span class="math inline">\(\eta_i\)</span> nos parâmetros <span class="math inline">\(\boldsymbol\beta\)</span>, mas a média da resposta não precisa ser uma função linear das covariáveis. Isso não exige que as variáveis explicativas sejam categóricas quando a resposta é categórica: elas podem ser quantitativas, categóricas ou de ambos os tipos.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Respostas com mais de duas categorias">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Nota</span>Respostas com mais de duas categorias
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Quando a resposta tem três ou mais categorias, a especificação depende de serem nominais ou ordenadas. Modelos de logitos de categorias de referência são usados para respostas nominais e modelos de logitos cumulativos, por exemplo, podem aproveitar a ordenação de uma resposta ordinal. Essas extensões não serão desenvolvidas nesta aula, cujo foco é a resposta binária.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="regressão-logística-binária" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="regressão-logística-binária"><span class="header-section-number">2.2</span> Regressão logística binária</h2>
+<p>Seja <span class="math inline">\(Y_i\)</span> o indicador do evento de interesse para a observação <span class="math inline">\(i\)</span>, com <span class="math inline">\(Y_i=1\)</span> se o evento ocorre e <span class="math inline">\(Y_i=0\)</span> caso contrário. Condicionalmente às covariáveis <span class="math inline">\(\mathbf{x}_i\)</span>, assume-se que</p>
+<p><span class="math display">\[
+Y_i\mid\mathbf{x}_i \sim \operatorname{Bernoulli}(\pi_i),
+\qquad
+\pi_i = P(Y_i=1\mid\mathbf{x}_i).
+\]</span></p>
+<p>Como a média condicional é <span class="math inline">\(E(Y_i\mid\mathbf{x}_i)=\pi_i\)</span> e a variância é <span class="math inline">\(\operatorname{Var}(Y_i\mid\mathbf{x}_i)=\pi_i(1-\pi_i)\)</span>, a variância depende da média. Essa característica afasta o modelo da estrutura linear clássica com variância constante (homocedástica).</p>
+<p>Para modelar essa probabilidade em função das covariáveis, utiliza-se a <strong>ligação logito</strong>. As covariáveis podem ser quantitativas, categóricas ou de ambos os tipos.</p>
+<p>A função da ligação logito é transformar os valores de <span class="math inline">\(\pi\)</span>, restritos ao intervalo <span class="math inline">\((0,1)\)</span>, no conjunto dos números reais (<span class="math inline">\(\mathbb{R}\)</span>), ao definir o logaritmo das chances do evento como uma combinação linear das variáveis explicativas (covariáveis):</p>
+<p><span class="math display">\[
+\operatorname{logit}(\pi_i)
+=\log\left(\frac{\pi_i}{1-\pi_i}\right)
+=\beta_0+\beta_1x_{i1}+\cdots+\beta_px_{ip}=\eta_i.
+\]</span></p>
+<p>Ao isolar <span class="math inline">\(\pi _{i}\)</span> na equação acima, obtemos a probabilidade estimada por meio da função logística: <span class="math display">\[ \pi_i=\frac{1}{1+e^{-(\beta_0+\beta_1x+ \cdots+\beta_px)}}.\]</span></p>
+<p>Essa transformação garante <span class="math inline">\(0&lt;\pi_i&lt;1\)</span> para qualquer valor finito do preditor. Portanto, <strong>o log das chances permite modelar uma relação linear sem deixar que as probabilidades previstas saiam do intervalo válido</strong>, além de se adequar à estrutura de resposta binária.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Como a ligação logito transforma os valores de $\pi$ para números $\mathbb{R}$?">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Nota</span>Como a ligação logito transforma os valores de <span class="math inline">\(\pi\)</span> para números <span class="math inline">\(\mathbb{R}\)</span>?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A probabilidade está limitada ao intervalo <span class="math inline">\((0,1)\)</span>, enquanto o preditor linear <span class="math inline">\(\eta_i\)</span> pode assumir qualquer valor real. A ligação logito permite relacionar essas duas escalas por meio de duas etapas.</p>
+<p><strong>1. Da probabilidade para a chance.</strong> Para uma probabilidade <span class="math inline">\(\pi_i\)</span>, a chance do evento é</p>
+<p><span class="math display">\[
+\operatorname{odds}_i=\frac{\pi_i}{1-\pi_i}.
+\]</span></p>
+<p>Como <span class="math inline">\(0&lt;\pi_i&lt;1\)</span>, essa chance é positiva e pode assumir qualquer valor em <span class="math inline">\((0,+\infty)\)</span>.</p>
+<p>Por exemplo, se <span class="math inline">\(\pi_i=0{,}20\)</span>, a chance é <span class="math inline">\(0{,}20/0{,}80=0{,}25\)</span>. Se <span class="math inline">\(\pi_i=0{,}50\)</span>, a chance é <span class="math inline">\(1\)</span> e, se <span class="math inline">\(\pi_i=0{,}80\)</span>, é <span class="math inline">\(4\)</span>.</p>
+<p><strong>2. Da chance para o logito.</strong> Aplicamos o logaritmo natural à chance:</p>
+<p><span class="math display">\[
+\operatorname{logit}(\pi_i)=\log\left(\frac{\pi_i}{1-\pi_i}\right).
+\]</span> O logaritmo transforma valores positivos em números reais, de modo que a função logito estabelece uma correspondência entre probabilidades em <span class="math inline">\((0,1)\)</span> e valores em <span class="math inline">\(\mathbb{R}\)</span>. Em particular, <span class="math inline">\(\operatorname{logit}(\pi_i=0,5)=0\)</span>, tende a <span class="math inline">\(-\infty\)</span> quando <span class="math inline">\(\pi_i → 0\)</span> e a <span class="math inline">\(\infty\)</span> quando <span class="math inline">\(\pi_i → 1\)</span>.</p>
+<p>Portanto, <span class="math inline">\(\operatorname{logit}\)</span> é estritamente crescente e estabelece uma correspondência um a um entre <span class="math inline">\((0,1)\)</span> e <span class="math inline">\(\mathbb{R}\)</span>.</p>
+<p><strong>Explore a transformação:</strong> mova o controle para alterar o preditor linear e acompanhar a probabilidade, a chance e o logito correspondentes.</p>
+<div id="logit-explorador" style="border:1px solid #343840; border-radius:12px; padding:1rem; margin:0.75rem 0 1rem; background:#202329; color:#eef0f4; font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+<label for="logit-pi" style="display:block; font-weight:600; margin-bottom:0.25rem;">Preditor linear, η</label> <input id="logit-pi" type="range" min="-6" max="6" step="0.01" value="0" style="display:block; width:100%; margin:0.65rem 0 1rem; accent-color:#f4a340;">
+<div style="border-radius:10px; padding:0.75rem 0.5rem 0.25rem; background:#25282f;">
+<svg id="logit-grafico" viewbox="0 0 520 380" role="img" aria-label="Curva logística que transforma o preditor linear em probabilidade entre zero e um" style="display:block; width:100%; height:auto;">
+<text x="18" y="23" fill="#eef0f4" font-size="14" font-weight="600">Transformação logística: mapeamento de probabilidades (0, 1)</text> <line x1="32" y1="45" x2="48" y2="45" stroke="#8fb8ff" stroke-width="2" stroke-dasharray="4 4"></line> <text x="54" y="49" fill="#cbd0da" font-size="10">Assíntotas</text> <circle cx="151" cy="45" r="3.5" fill="#f4a340"></circle> <text x="160" y="49" fill="#cbd0da" font-size="10">Ponto de inflexão</text> <circle cx="284" cy="45" r="4" fill="#25282f" stroke="#8fb8ff" stroke-width="1.5"></circle> <text x="293" y="49" fill="#cbd0da" font-size="10">Valor selecionado</text> <g id="logit-eixos" fill="none" stroke="#505560" stroke-width="1"></g> <g id="logit-assintotas" fill="none" stroke="#8fb8ff" stroke-width="1" stroke-dasharray="4 4"></g> <g id="logit-marcas" fill="#cbd0da" font-size="9" text-anchor="middle"></g> <path id="logit-curva" fill="none" stroke="#f4a340" stroke-width="2.4"></path> <circle id="logit-inflexao" r="4" fill="#f4a340" stroke="#fff" stroke-width="1.2"></circle> <circle id="logit-ponto" r="5" fill="#25282f" stroke="#8fb8ff" stroke-width="2"></circle> <text id="logit-coordenada" fill="#eef0f4" font-size="10"></text> <text x="270" y="364" text-anchor="middle" fill="#cbd0da" font-size="11">Preditor linear (η)</text> <text transform="translate(16 191) rotate(-90)" text-anchor="middle" fill="#cbd0da" font-size="10">Probabilidade estimada, π</text>
+</svg>
+</div>
+<div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0.5rem; margin-top:0.75rem; color:#eef0f4;">
+<div>
+<small style="color:#b9bfca;">Probabilidade</small><br><strong id="logit-valor-pi">0,50</strong>
+</div>
+<div>
+<small style="color:#b9bfca;">Chance</small><br><strong id="logit-valor-odds">1,00</strong>
+</div>
+<div>
+<small style="color:#b9bfca;">Logito</small><br><strong id="logit-valor-logit">0,00</strong>
+</div>
+</div>
+</div>
+<script>
+(() => {
+  const root = document.getElementById('logit-explorador');
+  if (!root) return;
+  const slider = root.querySelector('#logit-pi');
+  const curve = root.querySelector('#logit-curva');
+  const point = root.querySelector('#logit-ponto');
+  const inflection = root.querySelector('#logit-inflexao');
+  const coordinate = root.querySelector('#logit-coordenada');
+  const axes = root.querySelector('#logit-eixos');
+  const asymptotes = root.querySelector('#logit-assintotas');
+  const ticks = root.querySelector('#logit-marcas');
+  const left = 54, right = 505, top = 72, bottom = 310;
+  const x = eta => left + (eta + 5) / 11 * (right - left);
+  const y = probability => bottom - probability / 1.1 * (bottom - top);
+  const logistic = eta => 1 / (1 + Math.exp(-eta));
+  const ns = 'http://www.w3.org/2000/svg';
+  const addLine = (group, x1, y1, x2, y2, attrs = {}) => {
+    const line = document.createElementNS(ns, 'line');
+    for (const [key, value] of Object.entries({x1, y1, x2, y2, ...attrs})) line.setAttribute(key, value);
+    group.appendChild(line);
+  };
+  for (let value = 0; value <= 1.1001; value += 0.1) {
+    const yy = y(value);
+    addLine(axes, left, yy, right, yy, {stroke: '#3b3f48'});
+    const label = document.createElementNS(ns, 'text');
+    label.setAttribute('x', 43); label.setAttribute('y', yy + 3);
+    label.setAttribute('text-anchor', 'end');
+    label.textContent = value.toFixed(1).replace('.', ',');
+    ticks.appendChild(label);
+  }
+  for (let value = -5; value <= 6; value++) {
+    const xx = x(value);
+    addLine(axes, xx, top, xx, bottom, {stroke: '#343840'});
+    const label = document.createElementNS(ns, 'text');
+    label.setAttribute('x', xx); label.setAttribute('y', 330);
+    label.textContent = value;
+    ticks.appendChild(label);
+  }
+  addLine(axes, x(0), top, x(0), bottom, {stroke: '#68707d', 'stroke-width': 1.2});
+  addLine(asymptotes, left, y(0), right, y(0));
+  addLine(asymptotes, left, y(1), right, y(1));
+  let path = '';
+  for (let i = 0; i <= 300; i++) {
+    const eta = -5 + i * 11 / 300;
+    path += `${i === 0 ? 'M' : 'L'}${x(eta).toFixed(2)},${y(logistic(eta)).toFixed(2)} `;
+  }
+  curve.setAttribute('d', path);
+  inflection.setAttribute('cx', x(0));
+  inflection.setAttribute('cy', y(0.5));
+  const update = () => {
+    const eta = Number(slider.value);
+    const probability = logistic(eta);
+    const odds = Math.exp(eta);
+    point.setAttribute('cx', x(eta));
+    point.setAttribute('cy', y(probability));
+    coordinate.setAttribute('x', Math.min(x(eta) + 8, right - 72));
+    coordinate.setAttribute('y', Math.max(y(probability) - 9, top + 10));
+    coordinate.textContent = `(${eta.toFixed(1).replace('.', ',')}; ${probability.toFixed(2).replace('.', ',')})`;
+    root.querySelector('#logit-valor-pi').textContent = probability.toFixed(3).replace('.', ',');
+    root.querySelector('#logit-valor-odds').textContent = odds.toFixed(3).replace('.', ',');
+    root.querySelector('#logit-valor-logit').textContent = eta.toFixed(3).replace('.', ',');
+  };
+  slider.addEventListener('input', update);
+  update();
+})();
+</script>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="Entendendo os conceitos Chance e Razão de Chances">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Dica</span>Entendendo os conceitos Chance e Razão de Chances
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Imagine que observamos dez partidas de cada um dos dois grupos, A e B. O grupo A venceu oito de dez partidas associadas a ele. O grupo B venceu quatro das 10 partidas que ele jogou. Os grupos representam conjuntos distintos de partidas, não se enfrentando na mesma partida.</p>
+<p><strong>Probabilidade observada.</strong> É a proporção de partidas com vitória no grupo:</p>
+<p><span class="math display">\[
+P_A=\frac{8}{10}=0{,}80,
+\qquad
+P_B=\frac{4}{10}=0{,}40.
+\]</span></p>
+<p><strong>Chance (<em>odds</em>).</strong> É a razão entre a probabilidade de vitória e a probabilidade de não vitória:</p>
+<p><span class="math display">\[
+\operatorname{odds}_A=\frac{0{,}80}{1-0{,}80}=\frac{0{,}80}{0{,}20}=4,
+\qquad
+\operatorname{odds}_B=\frac{0{,}40}{1-0{,}40}=\frac{0{,}40}{0{,}60}\approx0{,}67.
+\]</span> Assim, as chances de vitória são 4 para 1 no grupo A e aproximadamente 0,67 para 1 no grupo B.</p>
+<p><strong>Razão de Chances (<em>odds ratio</em>, OR).</strong> Compara as chances dos dois grupos:</p>
+<p><span class="math display">\[
+OR=\frac{\operatorname{odds}_A}{\operatorname{odds}_B}
+=\frac{4}{0{,}67}\approx6.
+\]</span> Assim, embora a probabilidade de vitória da Equipe A seja apenas duas vezes maior que a da Equipe B (<span class="math inline">\(0,80/0,40=2\)</span>), <strong>a chance de vitória no grupo A é aproximadamente seis vezes maior do que a do B</strong>.</p>
+<p>Essa interpretação em termos de razão de chances é fundamental na regressão logística, pois os coeficientes do modelo são frequentemente interpretados por meio de seus exponenciais, <span class="math inline">\(e^{\beta_j}\)</span>.</p>
+</div>
+</div>
+<p><strong>E como interpreto os coeficientes??</strong></p>
+<p>Analisando o resultado obtido no logito, <span class="math display">\[
+\log\left(\frac{\pi_i}{1-\pi_i}\right)
+=\beta_0+\beta_1x_{i1}+\cdots+\beta_px_{ip}=\eta_i,
+\]</span> o coeficiente estimado <span class="math inline">\(\hat {\beta_j}\)</span> corresponde à mudança esperada na <em>escala de logaritmo das chances</em> de ocorrência do evento de interesse associada a um incremento unitário em <span class="math inline">\(x_j\)</span>, mantendo-se constantes as demais covariáveis do modelo.</p>
+<ul>
+<li>Para uma variável quantitativa <span class="math inline">\(x_j\)</span>, um aumento de uma unidade multiplica as chances por <span class="math inline">\(\exp(\beta_j)\)</span>.</li>
+<li>Para uma variável categórica, a razão de chances compara um nível com a categoria de referência.</li>
+</ul>
+<p>A variação na chance (odds) é multiplicativa e constante, mas a variação na probabilidade vai sempre depender dos valores das outras covariáveis, pois <span class="math display">\[ \pi_i=\frac{1}{1+e^{-\eta_i}}.\]</span></p>
+</section>
+<section id="estimação-dos-parâmetros-no-glm" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="estimação-dos-parâmetros-no-glm"><span class="header-section-number">2.3</span> Estimação dos parâmetros no <code>glm()</code></h2>
+<p>O ajuste de um MLG é determinado pelas estimativas dos parâmetros <span class="math inline">\(\hat{\boldsymbol \beta}\)</span>. Na regressão linear normal, os estimadores de máxima verossimilhança dos coeficientes coincidem com os estimadores de mínimos quadrados e podem ser obtidos por uma expressão fechada. Na regressão logística, as equações que determinam os coeficientes dependem da função logística e, em geral, não podem ser resolvidas isolando cada parâmetro em uma fórmula algébrica. Nesta apostila, considera-se o método de máxima verossimilhança (MV) para estimar os parâmetros lineares <span class="math inline">\(\beta_1, \ldots, \beta_p\)</span> do modelo, que tem muitas propriedades ótimas, tais como, consistência e eficiência assintótica.</p>
+<p>Sob independência condicional, a verossimilhança das respostas Bernoulli observadas é</p>
+<p><span class="math display">\[
+L(\boldsymbol\beta; \boldsymbol y)
+=\prod_{i=1}^n \pi_i^{y_i}(1-\pi_i)^{1-y_i},
+\]</span></p>
+<p>em que <span class="math inline">\(\boldsymbol\beta=(\beta_1, \ldots, \beta_p)\)</span> é o vetor de parâmetros e <span class="math inline">\(\mathbf{y}=(y_1,\ldots,y_n)\)</span> representa o conjunto de observações. E sua log-verossimilhança é</p>
+<p><span class="math display">\[
+\ell(\boldsymbol\beta; \boldsymbol y)
+=\ell(\boldsymbol \beta)=\sum_{i=1}^n\left[y_i\log(\pi_i)+(1-y_i)\log(1-\pi_i)\right].
+\]</span> Reorganizando os termos matematicamente, ela também pode ser representada isolando a razão de chances: <span class="math display">\[\ell(\boldsymbol\beta; \boldsymbol y)=\sum _{i=1}^{n}\left[y_{i}\log \left(\frac{\pi _{i}}{1-\pi _{i}}\right)+\log (1-\pi _{i})\right].\]</span> Em geral, as equações resultantes do método de máxima verossimilhança não possuem solução analítica fechada, os parâmetros <span class="math inline">\(\mathbfit{\beta }\)</span> são estimados numericamente por meio de processos iterativos, como o método de Newton-Raphson (ou Iteratively Reweighted Least Squares - IRLS). No modelo logístico, esse algoritmo apresenta convergência rápida e estável, exceto em cenários de separação perfeita dos dados, nos quais as probabilidades estimadas colapsam exatamente em zero ou um, impedindo a convergência dos coeficientes. Maiores detalhes sobre o processo de estimação podem ser obtidos em Cordeiro &amp; Demétrio (2008).</p>
+<!---
+::: {.callout-note title="Intuição da máxima verossimilhança"}
+Para cada conjunto candidato de coeficientes $\boldsymbol\beta$, a verossimilhança avalia quão compatível esse conjunto é com os resultados observados. A máxima verossimilhança escolhe os coeficientes que maximizam essa função, isto é, aqueles que atribuem maior verossimilhança à amostra observada. A verossimilhança não deve ser interpretada como a probabilidade dos parâmetros.
+:::
+--->
+<p>No R, usamos a função <code>glm(..., family = binomial)</code>, que por default usa o algoritmo IWLS (<em>iteratively weighted least squares</em>) para encontrar o máximo da verossimilhança, atualizando as estimativas até convergir ou atingir o limite computacional. Os valores iniciais necessários são definidos automaticamente pelo software. Porém, o argumento <code>start</code> permite fornecer valores iniciais para os coeficientes quando houver uma razão específica para fazê-lo, mas não garante convergência.</p>
+<p>Após o ajuste, <code>modelo$converged</code> indica se houve convergência e <code>modelo$iter</code> informa o número de iterações. A documentação sobre <code>glm()</code> e seus argumentos estão descritos em <a href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/glm.html">documentação de <code>glm()</code></a>.</p>
+</section>
+</section>
+<section id="exemplo-1-breast-cancer-wisconsin" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> EXEMPLO 1 (Breast Cancer Wisconsin)</h1>
+<p>Considere um estudo sobre câncer de mama em que se deseja modelar a probabilidade de um tumor mamário ser <strong>maligno</strong>. O conjunto <strong>Breast Cancer Wisconsin</strong> reúne 699 observações e registra duas classes para lesões mamárias: <code>benign</code> (benigno) ou <code>malignant</code> (maligno). A base, disponibilizada pelo repositório UCI e incluída no pacote <code>mlbench</code> do R, contém características celulares e a classe atribuída a cada observação.</p>
+<p>A variável resposta indica se o tumor mamário é benigno ou maligno e será definida por</p>
+<p><span class="math display">\[
+Y_i=\begin{cases}
+1, &amp; \text{tumor maligno},\\
+0, &amp; \text{tumor benigno}.
+\end{cases}
+\]</span></p>
+<p>Seja <span class="math inline">\(\pi_i=P(Y_i=1\mid \text{Cell.size}_i)\)</span> a probabilidade de o <span class="math inline">\(i\)</span>-ésimo tumor ser maligno. Neste exemplo, usaremos como variável independente apenas <code>Cell.size</code>, uma característica celular registrada em uma escala ordinal de 1 a 10. Para este exercício, trataremos essa escala numericamente, supondo que um aumento de um ponto tenha a mesma associação com o logito.</p>
+<section id="leitura-da-base-de-dados" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="leitura-da-base-de-dados"><span class="header-section-number">3.1</span> Leitura da base de dados</h2>
+<p>O código define <span class="math inline">\(Y=1\)</span> para tumor maligno e <span class="math inline">\(Y=0\)</span> para tumor benigno. Se houver observações sem valor registrado em <code>Cell.size</code>, elas serão excluídas desta análise.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">"BreastCancer"</span>, <span class="at">package =</span> <span class="st">"mlbench"</span>, <span class="at">envir =</span> .GlobalEnv)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>bc <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(BreastCancer) <span class="sc">|&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Y =</span> <span class="fu">as.integer</span>(Class <span class="sc">==</span> <span class="st">"malignant"</span>),</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">Cell.size =</span> <span class="fu">as.numeric</span>(<span class="fu">as.character</span>(Cell.size))</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>()</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(bc)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 699
+Columns: 2
+$ Y         &lt;int&gt; 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, …
+$ Cell.size &lt;dbl&gt; 1, 4, 1, 8, 1, 10, 1, 1, 1, 2, 1, 1, 3, 1, 7, 4, 1, 1, 7, 1,…</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>bc <span class="sc">|&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(Y, <span class="at">name =</span> <span class="st">"n"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">resultado =</span> <span class="fu">if_else</span>(Y <span class="sc">==</span> <span class="dv">1</span>, <span class="st">"Tumor maligno"</span>, <span class="st">"Tumor benigno"</span>),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">proporcao =</span> n <span class="sc">/</span> <span class="fu">sum</span>(n))</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 4
+      Y     n resultado     proporcao
+  &lt;int&gt; &lt;int&gt; &lt;chr&gt;             &lt;dbl&gt;
+1     0   458 Tumor benigno     0.655
+2     1   241 Tumor maligno     0.345</code></pre>
+</div>
+</div>
+</section>
+<section id="dispersão-dos-dados" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="dispersão-dos-dados"><span class="header-section-number">3.2</span> Dispersão dos dados</h2>
+<p>Como <span class="math inline">\(Y\)</span> é binária, os pontos se concentram em 0 e 1. <code>geom_jitter()</code> aplica um pequeno deslocamento apenas para facilitar a visualização, para efeito de análise os valores observados de <span class="math inline">\(Y\)</span> não são alterados.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(bc, <span class="fu">aes</span>(<span class="at">x =</span> Cell.size, <span class="at">y =</span> Y)) <span class="sc">+</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_jitter</span>(<span class="at">width =</span> <span class="fl">0.08</span>, <span class="at">height =</span> <span class="fl">0.04</span>, <span class="at">alpha =</span> <span class="fl">0.2</span>, <span class="at">color =</span> <span class="st">"grey35"</span>) <span class="sc">+</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>) <span class="sc">+</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Tumor benigno (Y = 0)"</span>, <span class="st">"Tumor maligno (Y = 1)"</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.08</span>, <span class="fl">1.08</span>)) <span class="sc">+</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Tamanho celular (Cell.size)"</span>,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Resultado observado"</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div id="fig-observados-cell-size" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-observados-cell-size-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="APLogistica_files/figure-html/fig-observados-cell-size-1.png" class="img-fluid figure-img" style="width:85.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-observados-cell-size-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;3.1: Tumores mamários benignos e malignos por Cell.size.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="ajuste-do-modelo-logístico-simples" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="ajuste-do-modelo-logístico-simples"><span class="header-section-number">3.3</span> Ajuste do modelo logístico simples</h2>
+<p>O modelo permite estimar a probabilidade de o tumor ser maligno em função do valor de <code>Cell.size</code>:</p>
+<p><span class="math display">\[
+\log\left(\frac{\pi_i}{1-\pi_i}\right)
+=\beta_0+\beta_1\,\text{Cell.size}_i.
+\]</span></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>bc_modelo <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y <span class="sc">~</span> Cell.size, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>), <span class="at">data =</span> bc)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(bc_modelo)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = Y ~ Cell.size, family = binomial(link = "logit"), 
+    data = bc)
+
+Coefficients:
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)   -4.960      0.360  -13.78   &lt;2e-16 ***
+Cell.size      1.489      0.121   12.30   &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 900.53  on 698  degrees of freedom
+Residual deviance: 275.55  on 697  degrees of freedom
+AIC: 279.55
+
+Number of Fisher Scoring iterations: 7</code></pre>
+</div>
+</div>
+<p>A saída de <code>summary()</code> apresenta os coeficientes, o erro-padrão, o teste de Wald e o valor-p do coeficiente. Ao nível de significância de <span class="math inline">\(5\%\)</span>, há evidência estatística para a rejeição de <span class="math inline">\(H_0:\beta_1=0\)</span>. Para o intercepto, o teste também foi significativo <span class="math inline">\(p&lt;0{,}001\)</span>), levando à rejeição de <span class="math inline">\(H_0:\beta_0=0\)</span>.</p>
+<div class="callout callout-style-simple callout-none no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p>No caso de <span class="math inline">\(\beta_0=0\)</span> e <code>cell_size = 0</code>, a interpretação diz respeito às chances estimadas serem iguais a <span class="math inline">\(1\)</span>, o que corresponde a uma probabilidade de <span class="math inline">\(0{,}5\)</span>. Como zero não está na escala observada, não descreve uma observação da base e, portanto, <span class="math inline">\(\beta_0\)</span> tem interpretação prática limitada neste exemplo.</p>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>bc_nulo <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y <span class="sc">~</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>), <span class="at">data =</span> bc)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Teste da razão de verossimilhanças</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(bc_nulo, bc_modelo)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Deviance Table
+
+Model 1: Y ~ 1
+Model 2: Y ~ Cell.size
+  Resid. Df Resid. Dev Df Deviance  Pr(&gt;Chi)    
+1       698     900.53                          
+2       697     275.55  1   624.97 &lt; 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>A função <code>anova()</code> comparou o modelo nulo, que tem apenas intercepto, com o modelo que inclui <code>cell_size</code>. Como os modelos são binomiais, aninhados e ajustados às mesmas observações, aplicou-se o teste da análise de deviance e, pelo seu resultado, incluir a variável <code>cell_size</code> faz sentido para nossa análise.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>bc_curva <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Cell.size =</span> <span class="fu">seq</span>(<span class="fu">min</span>(bc<span class="sc">$</span>Cell.size, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">max</span>(bc<span class="sc">$</span>Cell.size, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">length.out =</span> <span class="dv">400</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>bc_curva<span class="sc">$</span>probabilidade <span class="ot">&lt;-</span> <span class="fu">predict</span>(</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  bc_modelo, <span class="at">newdata =</span> bc_curva, <span class="at">type =</span> <span class="st">"response"</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(bc, ggplot2<span class="sc">::</span><span class="fu">aes</span>(<span class="at">x =</span> Cell.size, <span class="at">y =</span> Y)) <span class="sc">+</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  ggplot2<span class="sc">::</span><span class="fu">geom_jitter</span>(</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">width =</span> <span class="fl">0.12</span>, <span class="at">height =</span> <span class="fl">0.04</span>, <span class="at">alpha =</span> <span class="fl">0.35</span>,</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"grey45"</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  ggplot2<span class="sc">::</span><span class="fu">geom_line</span>(</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> bc_curva,</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    ggplot2<span class="sc">::</span><span class="fu">aes</span>(</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> Cell.size, <span class="at">y =</span> probabilidade,</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> <span class="st">"Modelo de regressão logística"</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">linewidth =</span> <span class="fl">1.2</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  ggplot2<span class="sc">::</span><span class="fu">scale_color_manual</span>(</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Modelo de regressão logística"</span> <span class="ot">=</span> <span class="st">"#0072B2"</span>),</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="cn">NULL</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>  ggplot2<span class="sc">::</span><span class="fu">scale_y_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">by =</span> <span class="fl">0.2</span>)) <span class="sc">+</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>  ggplot2<span class="sc">::</span><span class="fu">coord_cartesian</span>(<span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>  ggplot2<span class="sc">::</span><span class="fu">labs</span>(</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Tamanho celular (Cell.size)"</span>,</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Probabilidade de tumor maligno"</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>  ggplot2<span class="sc">::</span><span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">12</span>) <span class="sc">+</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>  ggplot2<span class="sc">::</span><span class="fu">theme</span>(</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="fu">c</span>(<span class="fl">0.98</span>, <span class="fl">0.08</span>),</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.justification =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.background =</span> ggplot2<span class="sc">::</span><span class="fu">element_rect</span>(</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>      <span class="at">fill =</span> <span class="st">"white"</span>, <span class="at">color =</span> <span class="st">"grey75"</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div id="fig-curva-ajuste-cell-size" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-curva-ajuste-cell-size-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="APLogistica_files/figure-html/fig-curva-ajuste-cell-size-1.png" class="img-fluid figure-img" style="width:85.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-curva-ajuste-cell-size-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;3.2: Probabilidade estimada de malignidade em função de Cell.size.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Para dar continuidade ao exercício didático, trataremos <code>bc_modelo</code> como um ajuste provisoriamente adequado para interpretar seus parâmetros. Ainda não examinamos resíduos nem outras ferramentas de diagnóstico, que deveria fazer parte de uma análise completa, mas ficará fora desta etapa introdutória.</p>
+</section>
+<section id="coeficiente-chances-e-razão-de-chances" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="coeficiente-chances-e-razão-de-chances"><span class="header-section-number">3.4</span> Coeficiente, chances e razão de chances</h2>
+<p>A função de ligação estimada do modelo é:</p>
+<p><span class="math display">\[
+\widehat{\operatorname{logit}}(\pi_i)=
+-4{,}960
++
+1{,}489\,\text{Cell.size}_i.
+\]</span> <strong>Interpretação do intercepto</strong></p>
+<p>A estimativa do intercepto <span class="math inline">\(\hat\beta_0=-4,960\)</span> representa o logaritmo das chances de malignidade quando <span class="math inline">\(Cell.size=0\)</span>.</p>
+<p>Como o valor zero não pertence ao domínio observado de <code>Cell.size</code>, o intercepto possui pouca interpretação prática e sua principal função é ajustar a posição da curva logística.</p>
+<p><strong>Interpretação do coeficiente de Cell.size</strong></p>
+<p>A estimativa de <span class="math inline">\(\hat\beta_1\)</span> descreve a variação no <em>logaritmo das chances</em> de um tumor ser maligno associada a um aumento de uma unidade em <code>Cell.size</code>. Como a estimativa é positiva, temos que a cada aumento de <em>uma unidade em Cell.size</em>, o <em>logaritmo das chances</em> de o tumor ser maligno <em>aumenta em 1,489 unidades</em>. Com isso, valores mais altos na pontuação de uniformidade do tamanho celular estão associados a maiores chances de o tumor ser maligno.</p>
+<p>Entretanto, essa interpretação é realizada na escala do logito, que não possui significado intuitivo para a maioria das aplicações. Por esse motivo, costuma-se trabalhar com a exponencial do coeficiente para obtenção da razão de chances (OR).</p>
+<p><strong>Interpretação da razão de chances</strong></p>
+<p>No R, a razão de chances pode ser calculada por:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">coef</span>(bc_modelo))</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>(Intercept)   Cell.size 
+0.007011619 4.431374991 </code></pre>
+</div>
+</div>
+<p>Logo, <span class="math display">\[OR= e^{\widehat\beta_1}= 4,43.\]</span> Portanto, a cada aumento de uma unidade em <code>Cell.size</code>, as chances de o tumor ser maligno são multiplicadas por 4.43. Ou, equivalentemente, a cada aumento de uma unidade em Cell.size, as chances de malignidade aumentam aproximadamente <span class="math inline">\(343\%\)</span>. Esse valor se refere às <strong>chances</strong>, não a um aumento igual na probabilidade.</p>
+<p>Abaixo, temos o valor do IC 95% para os coeficientes do modelo.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">#IC95% OR</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">confint</span>(bc_modelo))</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                  2.5 %     97.5 %
+(Intercept) 0.003285838 0.01355924
+Cell.size   3.546947353 5.70852632</code></pre>
+</div>
+</div>
+<p>Se o intervalo para <span class="math inline">\(\beta_1\)</span> incluir 1, podemos inferir que os dados não fornecem evidência suficiente de associação por <code>Cell.size</code>, ao nível de 5% de significância.</p>
+</section>
+<section id="comparação-entre-tumores-com-diferentes-cell.size" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="comparação-entre-tumores-com-diferentes-cell.size"><span class="header-section-number">3.5</span> Comparação entre tumores com diferentes <code>Cell.size</code></h2>
+<p>A tabela reúne, para cada tamanho celular, o <strong>logito estimado</strong>, a <strong>chance (<em>odds</em>)</strong> de malignidade, a <strong>probabilidade estimada</strong> e a <strong>razão de chances (OR)</strong> ao comparar esse valor de <code>Cell.size</code> com o valor uma unidade maior.</p>
+<div class="cell" data-tbl-cap="Logito, chance (odds), probabilidade estimada e OR por valor de Cell.size.">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 5
+  Cell.size `Logito estimado`   Chance `P(tumor maligno)` `OR (x para x + 1)`
+      &lt;dbl&gt;             &lt;dbl&gt;    &lt;dbl&gt;              &lt;dbl&gt;               &lt;dbl&gt;
+1         2            -1.98     0.138              0.121                4.43
+2         3            -0.494    0.61               0.379                4.43
+3         4             0.995    2.70               0.73                 4.43
+4         7             5.46   235.                 0.996                4.43
+5         8             6.95  1043.                 0.999                4.43</code></pre>
+</div>
+</div>
+<p>A <strong>chance (<em>odds</em>)</strong> descreve, para cada valor de <code>Cell.size</code>, a razão entre a probabilidade de malignidade e a probabilidade de benignidade.</p>
+<p>A <strong>OR de x para x + 1</strong> compara as chances de dois valores consecutivos de <code>Cell.size</code> e, neste modelo, ela é constante <span class="math inline">\((OR=4.43)\)</span>. Observe que a <span class="math inline">\(OR\)</span> não é uma razão entre probabilidades. Embora a <span class="math inline">\(OR\)</span> por aumento de uma unidade seja a mesma, a mudança na probabilidade depende do valor inicial de <code>Cell.size</code>. Por exemplo, na tabela, a probabilidade estimada aumenta:</p>
+<ul>
+<li>25.8 pontos percentuais quando <code>Cell.size</code> passa de 2 para 3;</li>
+<li>0.3 ponto percentual quando <code>Cell.size</code> passa de 7 para 8.</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Nota
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Esse exemplo foi ilustrativo para entender o ajuste de um Regressão Logística. A variável <code>Cell.size</code> é ordinal, mas foi tratado numericamente e o modelo ajustado incluiu apenas esse preditor. As associações estimadas não demonstram causalidade, nem foi avaliado o desempenho em novos casos.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="exemplo-2-regressão-logística-múltipla" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> EXEMPLO 2 (Regressão Logística Múltipla)</h1>
+<p>Depois de estudar o modelo com um único preditor, passamos à regressão logística múltipla. A resposta continua binária, mas consideraremos várias características simultaneamente para estimar a probabilidade de ocorrência do resultado de interesse.</p>
+<p>Neste exemplo, utilizaremos a base <code>PimaIndiansDiabetes2</code>, do pacote <code>mlbench</code> do R, que contém informações de saúde de mulheres da etnia Pima. O objetivo é investigar a associação de características como idade, índice de massa corporal (IMC) e pressão arterial com a presença de diabetes, estimando o efeito de cada variável ajustado pelas demais e a probabilidade de um diagnóstico positivo.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mlbench)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Importando a base de dados</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(PimaIndiansDiabetes2)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>da_diabetes <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(PimaIndiansDiabetes2)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(da_diabetes)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 392
+Columns: 9
+$ pregnant &lt;dbl&gt; 1, 0, 3, 2, 1, 5, 0, 1, 1, 3, 11, 10, 1, 13, 3, 3, 4, 4, 3, 9…
+$ glucose  &lt;dbl&gt; 89, 137, 78, 197, 189, 166, 118, 103, 115, 126, 143, 125, 97,…
+$ pressure &lt;dbl&gt; 66, 40, 50, 70, 60, 72, 84, 30, 70, 88, 94, 70, 66, 82, 76, 5…
+$ triceps  &lt;dbl&gt; 23, 35, 32, 45, 23, 19, 47, 38, 30, 41, 33, 26, 15, 19, 36, 1…
+$ insulin  &lt;dbl&gt; 94, 168, 88, 543, 846, 175, 230, 83, 96, 235, 146, 115, 140, …
+$ mass     &lt;dbl&gt; 28.1, 43.1, 31.0, 30.5, 30.1, 25.8, 45.8, 43.3, 34.6, 39.3, 3…
+$ pedigree &lt;dbl&gt; 0.167, 2.288, 0.248, 0.158, 0.398, 0.587, 0.551, 0.183, 0.529…
+$ age      &lt;dbl&gt; 21, 33, 26, 53, 59, 51, 31, 33, 32, 27, 51, 41, 22, 57, 28, 2…
+$ diabetes &lt;fct&gt; neg, pos, pos, pos, pos, pos, pos, neg, pos, neg, pos, pos, n…</code></pre>
+</div>
+</div>
+<p>Temos as seguintes variáveis disponíveis:</p>
+<ul>
+<li><code>pregnant</code>: Número de vezes que a mulher esteve grávida</li>
+<li><code>glucose</code>: Glicose plasmática em teste de 2h de tolerância à glicose (mg/dL)</li>
+<li><code>pressure</code>: Pressão arterial diastólica (mmHg)</li>
+<li><code>triceps</code>: Espessura da dobra cutânea do tríceps (mm)</li>
+<li><code>insulin</code>: Nível sérico de insulina (μU/mL)</li>
+<li><code>mass</code>: Índice de Massa Corporal (IMC)</li>
+<li><code>pedigree</code>: Histórico familiar de diabetes (score genético)</li>
+<li><code>age</code>: Idade da paciente (anos)</li>
+<li><code>diabetes</code>: Desfecho binário: pos (diabética) ou neg (não diabética)</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Criando faixas etárias</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>da_diabetes<span class="sc">$</span>age_cat <span class="ot">&lt;-</span> <span class="fu">cut</span>(da_diabetes<span class="sc">$</span>age,</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">40</span>, <span class="dv">50</span>, <span class="dv">82</span>),</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="at">right =</span> <span class="cn">FALSE</span>, <span class="co"># inclui limite inferior, exclui super</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"20-29"</span>, <span class="st">"30-39"</span>, <span class="st">"40-49"</span>, <span class="st">"&gt;=50"</span>))</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Construindo variável resposta</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>da_diabetes <span class="ot">&lt;-</span> da_diabetes <span class="sc">%&gt;%</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">resposta =</span> <span class="fu">ifelse</span>(diabetes <span class="sc">==</span> <span class="st">"pos"</span>, <span class="dv">1</span>, <span class="dv">0</span>))</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="análise-descritiva" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="análise-descritiva"><span class="header-section-number">4.1</span> Análise descritiva</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Frequências e percentuais da resposta</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>frequencias <span class="ot">&lt;-</span> <span class="fu">table</span>(</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">factor</span>(da_diabetes<span class="sc">$</span>diabetes, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"neg"</span>, <span class="st">"pos"</span>))</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>tabela_resposta <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Resultado =</span> <span class="fu">c</span>(<span class="st">"Sem diabetes"</span>, <span class="st">"Com diabetes"</span>, <span class="st">"Total"</span>),</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  Frequência <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">as.integer</span>(frequencias), <span class="fu">sum</span>(frequencias)),</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">Percentual =</span> <span class="fu">paste0</span>(</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">formatC</span>(</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="dv">100</span> <span class="sc">*</span> <span class="fu">prop.table</span>(frequencias), <span class="dv">100</span>),</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">format =</span> <span class="st">"f"</span>, <span class="at">digits =</span> <span class="dv">1</span>, <span class="at">decimal.mark =</span> <span class="st">","</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"%"</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Médias dos preditores por resultado</span></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>medias <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(pregnant, glucose, pressure, triceps,</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>        insulin, mass, pedigree, age) <span class="sc">~</span> diabetes,</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> da_diabetes,</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">FUN =</span> mean</span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>tabela_medias <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a>  Variável <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a>    <span class="st">"pregnant"</span>, <span class="st">"glucose"</span>, <span class="st">"pressure"</span>, <span class="st">"triceps"</span>,</span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a>    <span class="st">"insulin"</span>, <span class="st">"mass"</span>, <span class="st">"pedigree"</span>, <span class="st">"age"</span></span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Sem diabetes</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">as.numeric</span>(</span>
+<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unlist</span>(medias[medias<span class="sc">$</span>diabetes <span class="sc">==</span> <span class="st">"neg"</span>, <span class="sc">-</span><span class="dv">1</span>])</span>
+<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Com diabetes</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">as.numeric</span>(</span>
+<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unlist</span>(medias[medias<span class="sc">$</span>diabetes <span class="sc">==</span> <span class="st">"pos"</span>, <span class="sc">-</span><span class="dv">1</span>])</span>
+<span id="cb19-36"><a href="#cb19-36" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb19-37"><a href="#cb19-37" aria-hidden="true" tabindex="-1"></a>  <span class="at">check.names =</span> <span class="cn">FALSE</span></span>
+<span id="cb19-38"><a href="#cb19-38" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-39"><a href="#cb19-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-40"><a href="#cb19-40" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb19-41"><a href="#cb19-41" aria-hidden="true" tabindex="-1"></a>  tabela_resposta,</span>
+<span id="cb19-42"><a href="#cb19-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">"Distribuição da resposta"</span>,</span>
+<span id="cb19-43"><a href="#cb19-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">align =</span> <span class="fu">c</span>(<span class="st">"l"</span>, <span class="st">"c"</span>, <span class="st">"c"</span>)</span>
+<span id="cb19-44"><a href="#cb19-44" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-45"><a href="#cb19-45" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb19-46"><a href="#cb19-46" aria-hidden="true" tabindex="-1"></a>  tabela_medias,</span>
+<span id="cb19-47"><a href="#cb19-47" aria-hidden="true" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">"Médias dos preditores por resultado"</span>,</span>
+<span id="cb19-48"><a href="#cb19-48" aria-hidden="true" tabindex="-1"></a>  <span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="cb19-49"><a href="#cb19-49" aria-hidden="true" tabindex="-1"></a>  <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">decimal.mark =</span> <span class="st">","</span>),</span>
+<span id="cb19-50"><a href="#cb19-50" aria-hidden="true" tabindex="-1"></a>  <span class="at">align =</span> <span class="fu">c</span>(<span class="st">"l"</span>, <span class="st">"c"</span>, <span class="st">"c"</span>)</span>
+<span id="cb19-51"><a href="#cb19-51" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<table class="caption-top table table-sm table-striped small">
+<caption>Distribuição da resposta</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Resultado</th>
+<th style="text-align: center;">Frequência</th>
+<th style="text-align: center;">Percentual</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Sem diabetes</td>
+<td style="text-align: center;">262</td>
+<td style="text-align: center;">66,8%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Com diabetes</td>
+<td style="text-align: center;">130</td>
+<td style="text-align: center;">33,2%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Total</td>
+<td style="text-align: center;">392</td>
+<td style="text-align: center;">100,0%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<table class="caption-top table table-sm table-striped small">
+<caption>Médias dos preditores por resultado</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variável</th>
+<th style="text-align: center;">Sem diabetes</th>
+<th style="text-align: center;">Com diabetes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">pregnant</td>
+<td style="text-align: center;">2,721</td>
+<td style="text-align: center;">4,469</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">glucose</td>
+<td style="text-align: center;">111,431</td>
+<td style="text-align: center;">145,192</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">pressure</td>
+<td style="text-align: center;">68,969</td>
+<td style="text-align: center;">74,077</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">triceps</td>
+<td style="text-align: center;">27,252</td>
+<td style="text-align: center;">32,962</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">insulin</td>
+<td style="text-align: center;">130,855</td>
+<td style="text-align: center;">206,846</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">mass</td>
+<td style="text-align: center;">31,751</td>
+<td style="text-align: center;">35,778</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">pedigree</td>
+<td style="text-align: center;">0,472</td>
+<td style="text-align: center;">0,626</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">age</td>
+<td style="text-align: center;">28,347</td>
+<td style="text-align: center;">35,938</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<section id="separação-em-treino-e-teste" class="level3" data-number="4.1.1">
+<h3 data-number="4.1.1" class="anchored" data-anchor-id="separação-em-treino-e-teste"><span class="header-section-number">4.1.1</span> Separação em treino e teste</h3>
+<p>Separamos 70% das pacientes para ajustar o modelo e manteremos 30% para avaliar suas previsões. Como a base não contém datas de atendimento, faremos uma divisão aleatória estratificada pelo resultado de diabetes, preservando aproximadamente a proporção de casos positivos e negativos em cada grupo.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>indices_por_resultado <span class="ot">&lt;-</span> <span class="fu">split</span>(</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">seq_len</span>(<span class="fu">nrow</span>(da_diabetes)),</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  da_diabetes<span class="sc">$</span>diabetes</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>indices_treino <span class="ot">&lt;-</span> <span class="fu">unlist</span>(<span class="fu">lapply</span>(</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  indices_por_resultado,</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(i) <span class="fu">sample</span>(i, <span class="at">size =</span> <span class="fu">floor</span>(<span class="fl">0.70</span> <span class="sc">*</span> <span class="fu">length</span>(i)))</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>treino <span class="ot">&lt;-</span> da_diabetes[indices_treino, ]</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>teste <span class="ot">&lt;-</span> da_diabetes[<span class="sc">-</span>indices_treino, ]</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<table class="caption-top table table-sm table-striped small">
+<caption>Conjunto de treino</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Resultado</th>
+<th style="text-align: center;">Frequência</th>
+<th style="text-align: center;">Percentual</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Sem diabetes</td>
+<td style="text-align: center;">183</td>
+<td style="text-align: center;">66,8%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Com diabetes</td>
+<td style="text-align: center;">91</td>
+<td style="text-align: center;">33,2%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Total</td>
+<td style="text-align: center;">274</td>
+<td style="text-align: center;">100,0%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<table class="caption-top table table-sm table-striped small">
+<caption>Conjunto de teste</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Resultado</th>
+<th style="text-align: center;">Frequência</th>
+<th style="text-align: center;">Percentual</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Sem diabetes</td>
+<td style="text-align: center;">79</td>
+<td style="text-align: center;">66,9%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Com diabetes</td>
+<td style="text-align: center;">39</td>
+<td style="text-align: center;">33,1%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Total</td>
+<td style="text-align: center;">118</td>
+<td style="text-align: center;">100,0%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="ajuste-do-modelo-de-regressão-logística-múltipla" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="ajuste-do-modelo-de-regressão-logística-múltipla"><span class="header-section-number">4.2</span> Ajuste do modelo de regressão logística múltipla</h2>
+<p>Seja <span class="math inline">\(Y_i\)</span> o indicador de que a <span class="math inline">\(i\)</span>-ésima participante tem diabetes tipo 2 (<span class="math inline">\(Y_i=1\)</span> para diagnóstico positivo e <span class="math inline">\(Y_i=0\)</span> para diagnóstico negativo), e seja <span class="math inline">\(\pi_i=E(Y_i\mid\mathbf{x}_i)=P(Y_i=1\mid\mathbf{x}_i)\)</span>. Para o modelo completo, consideramos as variáveis clínicas e demográficas da base de dados. A faixa etária de 20 a 29 anos é a categoria de referência para a variável <code>age_cat</code>.</p>
+<p><span class="math display">\[
+\begin{aligned}
+\log\left(\frac{\pi_i}{1-\pi_i}\right)
+&amp;= \beta_0 + \beta_1\,\text{pregnant}_i
++ \beta_2\,\text{glucose}_i \\
+&amp;\quad + \beta_3\,\text{pressure}_i
++ \beta_4\,\text{triceps}_i
++ \beta_5\,\text{insulin}_i \\
+&amp;\quad + \beta_6\,\mathbb{1}(\text{age\_cat}_i=30\text{--}39) \\
+&amp;\quad + \beta_7\,\mathbb{1}(\text{age\_cat}_i=40\text{--}49) \\
+&amp;\quad + \beta_8\,\mathbb{1}(\text{age\_cat}_i\geq 50) \\
+&amp;\quad + \beta_9\,\text{mass}_i
++ \beta_{10}\,\text{pedigree}_i.
+\end{aligned}
+\]</span></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Modelo completo</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>modelo_completo <span class="ot">&lt;-</span> <span class="fu">glm</span>(</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  resposta <span class="sc">~</span> pregnant <span class="sc">+</span> glucose <span class="sc">+</span> pressure <span class="sc">+</span> triceps <span class="sc">+</span> insulin <span class="sc">+</span> age_cat <span class="sc">+</span> mass <span class="sc">+</span> pedigree,</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> treino,</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(modelo_completo)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = resposta ~ pregnant + glucose + pressure + triceps + 
+    insulin + age_cat + mass + pedigree, family = binomial(link = "logit"), 
+    data = treino)
+
+Coefficients:
+               Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)  -9.7221156  1.5626661  -6.221 4.92e-10 ***
+pregnant     -0.0040857  0.0689728  -0.059   0.9528    
+glucose       0.0381696  0.0069222   5.514 3.51e-08 ***
+pressure     -0.0004619  0.0159250  -0.029   0.9769    
+triceps       0.0348828  0.0223046   1.564   0.1178    
+insulin       0.0018104  0.0017399   1.040   0.2981    
+age_cat30-39  0.4726996  0.4473227   1.057   0.2906    
+age_cat40-49  1.4279352  0.6056690   2.358   0.0184 *  
+age_cat&gt;=50   1.0730078  0.7111881   1.509   0.1314    
+mass          0.0486190  0.0341510   1.424   0.1545    
+pedigree      1.4234863  0.5551483   2.564   0.0103 *  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 348.35  on 273  degrees of freedom
+Residual deviance: 224.84  on 263  degrees of freedom
+AIC: 246.84
+
+Number of Fisher Scoring iterations: 5</code></pre>
+</div>
+</div>
+<p><code>Estimate</code> apresenta os coeficientes na escala do logito. Cada coeficiente representa a variação no logaritmo das chances para uma unidade adicional do preditor, mantendo o outro constante. O p-valor de Wald testa <span class="math inline">\(H_0:\beta_j=0\)</span>.</p>
+</section>
+<section id="seleção-de-variáveis" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="seleção-de-variáveis"><span class="header-section-number">4.3</span> Seleção de variáveis</h2>
+<section id="seleção-de-variáveis-pelo-procedimento-stepwise" class="level3" data-number="4.3.1">
+<h3 data-number="4.3.1" class="anchored" data-anchor-id="seleção-de-variáveis-pelo-procedimento-stepwise"><span class="header-section-number">4.3.1</span> Seleção de variáveis pelo procedimento Stepwise</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>modelo_stepwise <span class="ot">&lt;-</span> MASS<span class="sc">::</span><span class="fu">stepAIC</span>(modelo_completo, <span class="at">direction =</span> <span class="st">"both"</span>)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Start:  AIC=246.84
+resposta ~ pregnant + glucose + pressure + triceps + insulin + 
+    age_cat + mass + pedigree
+
+           Df Deviance    AIC
+- pressure  1   224.84 244.84
+- pregnant  1   224.85 244.85
+- insulin   1   225.95 245.95
+- age_cat   3   230.53 246.53
+&lt;none&gt;          224.84 246.84
+- mass      1   226.89 246.89
+- triceps   1   227.31 247.31
+- pedigree  1   231.88 251.88
+- glucose   1   260.91 280.91
+
+Step:  AIC=244.84
+resposta ~ pregnant + glucose + triceps + insulin + age_cat + 
+    mass + pedigree
+
+           Df Deviance    AIC
+- pregnant  1   224.85 242.85
+- insulin   1   225.96 243.96
+- age_cat   3   230.74 244.74
+&lt;none&gt;          224.84 244.84
+- mass      1   226.98 244.98
+- triceps   1   227.32 245.32
++ pressure  1   224.84 246.84
+- pedigree  1   231.93 249.93
+- glucose   1   261.01 279.01
+
+Step:  AIC=242.85
+resposta ~ glucose + triceps + insulin + age_cat + mass + pedigree
+
+           Df Deviance    AIC
+- insulin   1   225.98 241.98
+&lt;none&gt;          224.85 242.85
+- mass      1   227.10 243.10
+- triceps   1   227.32 243.32
++ pregnant  1   224.84 244.84
++ pressure  1   224.85 244.85
+- age_cat   3   234.89 246.89
+- pedigree  1   232.06 248.06
+- glucose   1   261.15 277.15
+
+Step:  AIC=241.98
+resposta ~ glucose + triceps + age_cat + mass + pedigree
+
+           Df Deviance    AIC
+&lt;none&gt;          225.98 241.98
+- triceps   1   228.33 242.33
+- mass      1   228.61 242.61
++ insulin   1   224.85 242.85
++ pregnant  1   225.96 243.96
++ pressure  1   225.98 243.98
+- age_cat   3   236.47 246.47
+- pedigree  1   233.21 247.21
+- glucose   1   283.24 297.24</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(modelo_stepwise)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = resposta ~ glucose + triceps + age_cat + mass + 
+    pedigree, family = binomial(link = "logit"), data = treino)
+
+Coefficients:
+              Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)  -9.960619   1.336806  -7.451 9.26e-14 ***
+glucose       0.041232   0.006286   6.559 5.41e-11 ***
+triceps       0.033874   0.022147   1.529  0.12614    
+age_cat30-39  0.456465   0.420703   1.085  0.27792    
+age_cat40-49  1.410589   0.478064   2.951  0.00317 ** 
+age_cat&gt;=50   1.110082   0.581021   1.911  0.05606 .  
+mass          0.052495   0.032851   1.598  0.11005    
+pedigree      1.431781   0.552069   2.593  0.00950 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 348.35  on 273  degrees of freedom
+Residual deviance: 225.98  on 266  degrees of freedom
+AIC: 241.98
+
+Number of Fisher Scoring iterations: 5</code></pre>
+</div>
+</div>
+<p>A seleção foi realizada pelo procedimento Stepwise, usando o critério de informação de Akaike (AIC). A cada etapa, o procedimento avaliou a retirada ou a inclusão de termos e selecionou o modelo com menor AIC entre as alternativas consideradas.</p>
+<p>O modelo com menor AIC (<span class="math inline">\(=241,98\)</span>) foi o do modelo que ajustou <code>resposta ~ glucose + triceps + age_cat + mass + pedigree</code>.</p>
+</section>
+<section id="teste-deviance---anova" class="level3" data-number="4.3.2">
+<h3 data-number="4.3.2" class="anchored" data-anchor-id="teste-deviance---anova"><span class="header-section-number">4.3.2</span> Teste Deviance - anova()</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Ajustando o modelo reduzido</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>modelo_reduzido <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="at">formula =</span> resposta <span class="sc">~</span> glucose <span class="sc">+</span> age_cat <span class="sc">+</span> mass <span class="sc">+</span> pedigree, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>), <span class="at">data =</span> treino)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(modelo_reduzido)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = resposta ~ glucose + age_cat + mass + pedigree, 
+    family = binomial(link = "logit"), data = treino)
+
+Coefficients:
+               Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)  -10.018606   1.336602  -7.496 6.60e-14 ***
+glucose        0.040860   0.006229   6.560 5.37e-11 ***
+age_cat30-39   0.502557   0.417696   1.203  0.22891    
+age_cat40-49   1.422373   0.473120   3.006  0.00264 ** 
+age_cat&gt;=50    1.228041   0.574677   2.137  0.03260 *  
+mass           0.084392   0.026130   3.230  0.00124 ** 
+pedigree       1.481869   0.548710   2.701  0.00692 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 348.35  on 273  degrees of freedom
+Residual deviance: 228.33  on 267  degrees of freedom
+AIC: 242.33
+
+Number of Fisher Scoring iterations: 5</code></pre>
+</div>
+</div>
+<p>Com exceção da <code>age_cat30-39</code>, as demais variáveis do modelo são estatisticamente significativas. Como verificação complementar, comparamos os modelos completo e reduzido pelo teste da razão de verossimilhanças:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Comparando os dois modelos</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(modelo_completo, modelo_reduzido)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Deviance Table
+
+Model 1: resposta ~ pregnant + glucose + pressure + triceps + insulin + 
+    age_cat + mass + pedigree
+Model 2: resposta ~ glucose + age_cat + mass + pedigree
+  Resid. Df Resid. Dev Df Deviance Pr(&gt;Chi)
+1       263     224.84                     
+2       267     228.33 -4    -3.49   0.4794</code></pre>
+</div>
+</div>
+<p>O teste anova() para comparação de modelos apresentou um valor-<span class="math inline">\(p\)</span> de <span class="math inline">\(0,4794\)</span> (superior a <span class="math inline">\(0,05\)</span>). Isso indica que a exclusão conjunta das variáveis <code>pregnant</code>, <code>pressure</code>, <code>triceps</code> e <code>insulin</code> não prejudica significativamente o ajuste do modelo. Assim, o modelo reduzido pode ser mantido por ser mais parcimonioso, garantindo a simplicidade sem perda relevante de informação</p>
+<p>A função de ligação estimada do modelo reduzido é: <span class="math display">\[
+\begin{aligned}
+\widehat{\operatorname{logit}}(\pi_i)
+&amp;= -10,019
++ 0,041\,\text{glucose}_i \\
+&amp;\quad + 0,503\,\mathbb{1}(\text{age\_cat}_i=30\text{--}39) \\
+&amp;\quad + 1,422\,\mathbb{1}(\text{age\_cat}_i=40\text{--}49) \\
+&amp;\quad + 1,228\,\mathbb{1}(\text{age\_cat}_i\geq 50) \\
+&amp;\quad + 0,084\,\text{mass}_i
++ 1,482\,\text{pedigree}_i.
+\end{aligned}
+\]</span></p>
+<p>A faixa etária de 20 a 29 anos é a categoria de referência. Os coeficientes das demais faixas representam diferenças em relação a esse grupo, mantendo constantes as outras variáveis.</p>
+</section>
+</section>
+<section id="odds-ratio-e-ic-95" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="odds-ratio-e-ic-95"><span class="header-section-number">4.4</span> Odds Ratio e IC 95%</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>OR <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">exp</span>(<span class="fu">coef</span>(modelo_reduzido)),<span class="dv">3</span>)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cbind</span>(OR, <span class="fu">round</span>( <span class="fu">exp</span>(<span class="fu">confint</span>(modelo_reduzido)), <span class="dv">3</span>) )</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                OR 2.5 % 97.5 %
+(Intercept)  0.000 0.000  0.001
+glucose      1.042 1.030  1.055
+age_cat30-39 1.653 0.721  3.736
+age_cat40-49 4.147 1.647 10.629
+age_cat&gt;=50  3.415 1.122 10.869
+mass         1.088 1.035  1.148
+pedigree     4.401 1.544 13.303</code></pre>
+</div>
+</div>
+<p><strong>Interpretação dos resultados</strong></p>
+<p>As OR expressam como as chances (odds) de diagnóstico positivo de diabetes tipo 2 se comparam entre valores de uma variável, mantendo constantes as demais variáveis do modelo reduzido. As <span class="math inline">\(OR\)</span> se referem às chances, não a razões entre probabilidades nem a efeitos causais.</p>
+<ul>
+<li><strong>Glicose:</strong> a cada aumento de 1 mg/dL, as chances são multiplicadas por 1,042, isto é, aumentam <span class="math inline">\(4,2\%\)</span> (<span class="math inline">\(IC_{95\%} OR = [1,030; 1,055]\)</span>), equivalente a um aumento de <span class="math inline">\(3,0\%\)</span> a <span class="math inline">\(5,5\%\)</span>.</li>
+<li><strong>Idade de 30–39 anos:</strong> as chances são multiplicadas por 1,653 em relação às mulheres de 20–29 anos (<span class="math inline">\(IC_{95\%} = [0,721; 3,736]\)</span>).</li>
+<li><strong>Idade de 40–49 anos:</strong> as chances são multiplicadas por 4,147 em relação às mulheres de 20–29 anos (<span class="math inline">\(IC_{95\%} = [1,647; 10,629]\)</span>).</li>
+<li><strong>Idade de 50 anos ou mais:</strong> as chances são multiplicadas por 3,415 em relação às mulheres de 20–29 anos (<span class="math inline">\(IC_{95\%} = [1,122; 10,869]\)</span>).</li>
+<li><strong>IMC (mass):</strong> a cada aumento de 1 unidade, as chances são multiplicadas por 1,088, ou seja, aumentam <span class="math inline">\(8,8\%\)</span> (<span class="math inline">\(IC_{95\%} = [1,035; 1,148]\)</span>, equivalente a um aumento de <span class="math inline">\(3,5\%\)</span> a <span class="math inline">\(14,8\%\)</span>).</li>
+<li><strong>Histórico familiar (pedigree):</strong> a cada aumento de 1 unidade no escore, as chances são multiplicadas por 4,401 (<span class="math inline">\(IC_{95\%} = [1,544; 13,303]\)</span>).</li>
+</ul>
+<p>Com exceção de <code>age_cat30-39</code>, os IC <span class="math inline">\(95\%\)</span> dos demais preditores excluem 1, indicando associação estatística ao nível de <span class="math inline">\(5\%\)</span> neste modelo. Os intervalos para as faixas etárias e para pedigree são amplos, então as respectivas estimativas de associação possuem menor precisão estatística, exigindo cautela na interpretação pontual de seus efeitos lineares.</p>
+<p>O <span class="math inline">\(OR\)</span> do intercepto é <span class="math inline">\(0,000\)</span> após arredondamento. Ele representa as chances estimadas quando os preditores contínuos são iguais a zero e a faixa etária é 20–29 anos. Contudo, isso não tem interpretação prática útil neste exemplo.</p>
+</section>
+<section id="pseudo-r²" class="level2" data-number="4.5">
+<h2 data-number="4.5" class="anchored" data-anchor-id="pseudo-r²"><span class="header-section-number">4.5</span> Pseudo R²</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(modEvA)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="fu">RsqGLM</span>(modelo_reduzido)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="APLogistica_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$CoxSnell
+[1] 0.3546762
+
+$Nagelkerke
+[1] 0.4929186
+
+$McFadden
+[1] 0.3445221
+
+$Tjur
+[1] 0.4039407
+
+$sqPearson
+[1] 0.4064643</code></pre>
+</div>
+</div>
+<p>Os valores de pseudo-<span class="math inline">\(R^2\)</span> fornecem uma <strong>indicação geral da qualidade do ajuste do modelo</strong>, resumindo <strong>o quanto o modelo ajustado melhora a previsão dos resultados em relação a um modelo nulo</strong> (sem variáveis explicativas). Entretanto, diferentemente do <span class="math inline">\(R^2\)</span> da regressão linear, eles não representam a proporção da variabilidade explicada pela variável resposta.</p>
+<p>Na saída dos R, temos os resultados para as estatísticas de Cox–Snell (<span class="math inline">\(=0,355\)</span>), Nagelkerke (<span class="math inline">\(=0,493\)</span>) e McFadden (<span class="math inline">\(=0,345\)</span>), que são baseadas na comparação da verossimilhança do modelo ajustado com a do modelo nulo. Nagelkerke reescala a medida de Cox–Snell. A medida de Tjur (<span class="math inline">\(=0,404\)</span>) corresponde à diferença entre as probabilidades previstas médias dos grupos com e sem diabetes. Já sqPearson (<span class="math inline">\(=0,406\)</span>) é o quadrado da correlação entre os valores observados de <span class="math inline">\(Y\)</span> e as probabilidades previstas.</p>
+<p>Esses valores de pseudo-<span class="math inline">\(R^2\)</span> resumem aspectos do ajuste do modelo, mas não medem diretamente seu desempenho de classificação. A análise da capacidade de discriminação do modelo será feita pela curva ROC e pela AUC, considerando diferentes pontos de corte. Recomenda-se usar o índice de Youden para examinar um ponto de corte específico.</p>
+</section>
+<section id="teste-de-hosmer-lemeshow-qualidade-do-ajuste" class="level2" data-number="4.6">
+<h2 data-number="4.6" class="anchored" data-anchor-id="teste-de-hosmer-lemeshow-qualidade-do-ajuste"><span class="header-section-number">4.6</span> Teste de Hosmer-Lemeshow (qualidade do ajuste)</h2>
+<p>O teste de Hosmer-Lemeshow <strong>investiga a falta de ajuste do modelo</strong> ao comparar frequências observadas e esperadas em grupos definidos pelas probabilidades estimadas pelo modelo. Valores elevados de p-valor indicam ausência de evidências de falta de ajuste do modelos aos dados.</p>
+<p>Aplicado ao conjunto de treino, o teste verifica se há evidências de falta de ajuste entre as probabilidades estimadas pelo modelo e as frequências observadas, nos grupos, a partir dos dados utilizados para sua estimação.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ResourceSelection) </span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Conjunto de treino (g=10 por default)</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="fu">hoslem.test</span>(treino<span class="sc">$</span>resposta, <span class="fu">fitted</span>(modelo_reduzido), <span class="at">g=</span><span class="dv">10</span>)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Hosmer and Lemeshow goodness of fit (GOF) test
+
+data:  treino$resposta, fitted(modelo_reduzido)
+X-squared = 5.3091, df = 8, p-value = 0.7241</code></pre>
+</div>
+</div>
+<ul>
+<li>Como <span class="math inline">\(p ≥ 0,05\)</span>: não foi detectada falta de ajuste.</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Conjunto de teste (g=10 por default)</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>prob_teste <span class="ot">&lt;-</span> <span class="fu">predict</span>(modelo_reduzido,</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">newdata =</span> teste,</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">"response"</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a><span class="fu">hoslem.test</span>(teste<span class="sc">$</span>resposta, prob_teste)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Hosmer and Lemeshow goodness of fit (GOF) test
+
+data:  teste$resposta, prob_teste
+X-squared = 8.4971, df = 8, p-value = 0.3865</code></pre>
+</div>
+</div>
+</section>
+<section id="curva-roc-e-auc" class="level2" data-number="4.7">
+<h2 data-number="4.7" class="anchored" data-anchor-id="curva-roc-e-auc"><span class="header-section-number">4.7</span> Curva ROC e AUC</h2>
+<p>A curva ROC <strong>relaciona a taxa de verdadeiros positivos (Sensibilidade) à taxa de falsos positivos (<span class="math inline">\(1-\text{Especificidade}\)</span>)</strong> para diferentes pontos de corte. A área sob essa curva (AUC) <strong>resume a capacidade do modelo de discriminar os dois grupos</strong>.</p>
+<p>Calculamos as probabilidades previstas pelo modelo reduzido nos conjuntos de treino e teste. Os resultados obtidos nos dados de treino fornece uma avaliação do desempenho aparente, enquanto os de teste permite avaliar a discriminação em observações não utilizadas no ajuste.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pROC)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>prob_treino <span class="ot">&lt;-</span> <span class="fu">predict</span>(</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  modelo_reduzido,</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">newdata =</span> treino,</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">"response"</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>prob_teste <span class="ot">&lt;-</span> <span class="fu">predict</span>(</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  modelo_reduzido,</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">newdata =</span> teste,</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">"response"</span></span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>roc_treino <span class="ot">&lt;-</span> pROC<span class="sc">::</span><span class="fu">roc</span>(</span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">response =</span> treino<span class="sc">$</span>resposta,</span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">predictor =</span> prob_treino,</span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">direction =</span> <span class="st">"&lt;"</span>,</span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">quiet =</span> <span class="cn">TRUE</span></span>
+<span id="cb39-20"><a href="#cb39-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb39-21"><a href="#cb39-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-22"><a href="#cb39-22" aria-hidden="true" tabindex="-1"></a>roc_teste <span class="ot">&lt;-</span> pROC<span class="sc">::</span><span class="fu">roc</span>(</span>
+<span id="cb39-23"><a href="#cb39-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">response =</span> teste<span class="sc">$</span>resposta,</span>
+<span id="cb39-24"><a href="#cb39-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">predictor =</span> prob_teste,</span>
+<span id="cb39-25"><a href="#cb39-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb39-26"><a href="#cb39-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">direction =</span> <span class="st">"&lt;"</span>,</span>
+<span id="cb39-27"><a href="#cb39-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">quiet =</span> <span class="cn">TRUE</span></span>
+<span id="cb39-28"><a href="#cb39-28" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb39-29"><a href="#cb39-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-30"><a href="#cb39-30" aria-hidden="true" tabindex="-1"></a>auc_treino <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(pROC<span class="sc">::</span><span class="fu">auc</span>(roc_treino))</span>
+<span id="cb39-31"><a href="#cb39-31" aria-hidden="true" tabindex="-1"></a>auc_teste <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(pROC<span class="sc">::</span><span class="fu">auc</span>(roc_teste))</span>
+<span id="cb39-32"><a href="#cb39-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-33"><a href="#cb39-33" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
+<span id="cb39-34"><a href="#cb39-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">Conjunto =</span> <span class="fu">c</span>(<span class="st">"Treino"</span>, <span class="st">"Teste"</span>),</span>
+<span id="cb39-35"><a href="#cb39-35" aria-hidden="true" tabindex="-1"></a>  <span class="at">AUC =</span> <span class="fu">c</span>(auc_treino, auc_teste)</span>
+<span id="cb39-36"><a href="#cb39-36" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  Conjunto       AUC
+1   Treino 0.8749174
+2    Teste 0.8416099</code></pre>
+</div>
+</div>
+<p>As AUCs foram de <span class="math inline">\(0,875\)</span> no treino e <span class="math inline">\(0,842\)</span> no teste, indicando boa discriminação nos dois conjuntos. A redução de discriminação no teste foi pequena, sugerindo que o modelo apresenta boa capacidade de generalização para novos dados, sem indícios relevantes de overfitting.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plotando as curvas ROC: treino e teste</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(roc_treino, <span class="at">col =</span> <span class="st">"#D55E00"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">legacy.axes =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Curvas ROC: treino e teste"</span>, </span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"1 - Especificidade"</span>,</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">"Sensibilidade"</span>)</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(roc_teste, <span class="at">add =</span> <span class="cn">TRUE</span>, <span class="at">col =</span> <span class="st">"#2C7FB8"</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"bottomright"</span>,</span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">legend =</span> <span class="fu">c</span>(</span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"Treino: AUC = %.3f"</span>, auc_treino),</span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"Teste: AUC = %.3f"</span>, auc_teste)</span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">col =</span> <span class="fu">c</span>(<span class="st">"#D55E00"</span>, <span class="st">"#2C7FB8"</span>),</span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">bty =</span> <span class="st">"n"</span></span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="APLogistica_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li><p>A AUC de <span class="math inline">\(0,842\)</span> no conjunto de teste indica boa capacidade de distinguir os dois grupos, mas não significa acurácia de <span class="math inline">\(84,2%\)</span>.</p></li>
+<li><p>A AUC avalia a ordenação das observações pelas probabilidades estimadas, sem depender nem escolher um único ponto de corte.</p></li>
+<li><p>Quanto mais próxima a curva ROC estiver do canto superior esquerdo, melhor a discriminação do modelo, pois combina maior sensibilidade e menor taxa de falsos positivos.</p></li>
+</ul>
+<!---
+A curva ROC e a AUC avaliam a capacidade de discriminação do modelo. Elas não avaliam a calibração do modelo, isto é, a concordância entre as probabilidades estimadas e as proporções empíricas observadas. Um valor de $\text{AUC} = 0,842$ não representa uma acurácia de 84,2%. Portanto, um modelo pode apresentar excelente discriminação, mas falhar em refletir a probabilidade real de o evento ocorrer. Adicionalmente, o teste de Hosmer-Lemeshow não identificou falta de ajuste do modelo, confirmando a boa calibração do modelo reduzido ($p = 0,7241$).
+--->
+<section id="seleção-do-ponto-de-corte" class="level3" data-number="4.7.1">
+<h3 data-number="4.7.1" class="anchored" data-anchor-id="seleção-do-ponto-de-corte"><span class="header-section-number">4.7.1</span> Seleção do ponto de corte</h3>
+<p>O ponto de corte (<span class="math inline">\(\textbf{c}\)</span>) define a probabilidade a partir da qual uma observação é classificada como positiva:</p>
+<ul>
+<li>se <span class="math inline">\(\widehat{\pi}_i \geq c\)</span>, a classificação será 1;</li>
+<li>caso contrário, será 0.</li>
+</ul>
+<p>Sua escolha pode considerar:</p>
+<ul>
+<li><strong>Ponto de corte padrão de 0,5:</strong> classifica como positivas as observações com probabilidade estimada de pelo menos 50%. É uma escolha inicial quando os custos de falsos positivos e falsos negativos são semelhantes.</li>
+<li><strong>Curva ROC:</strong> permite comparar sensibilidade e especificidade para diferentes cortes. Um critério é maximizar o <strong>índice de Youden</strong>.</li>
+<li><strong>Contexto da aplicação:</strong> pode-se priorizar maior sensibilidade para identificar mais casos positivos ou maior especificidade para reduzir falsos positivos, conforme as consequências dos erros.<br>
+Por exemplo, em um contexto clínico, <code>alta sensibilidade</code> pode ser mais importante para <em>rastrear doenças graves</em>. Mas quando o <em>tratamento é caro ou arriscado</em>, focar em <code>alta especificidade</code> pode ser melhor.</li>
+</ul>
+<p>O índice de Youden é definido por:</p>
+<p><span class="math display">\[
+J=\text{sensibilidade}+\text{especificidade}-1.
+\]</span></p>
+<p>Selecionamos, no conjunto de treino, o ponto de corte que maximiza o índice de Youden <span class="math inline">\(J\)</span>. Esse mesmo limiar é aplicado ao treino e ao teste para avaliar a classificação.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>corte_youden <span class="ot">&lt;-</span> pROC<span class="sc">::</span><span class="fu">coords</span>(</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  roc_treino,</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="st">"best"</span>,</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">best.method =</span> <span class="st">"youden"</span>,</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ret =</span> <span class="fu">c</span>(<span class="st">"threshold"</span>, <span class="st">"sensitivity"</span>, <span class="st">"specificity"</span>, <span class="st">"accuracy"</span>),</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">transpose =</span> <span class="cn">FALSE</span></span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculando o índice de Youden no corte selecionado</span></span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>corte_youden<span class="sc">$</span>J <span class="ot">&lt;-</span> <span class="fu">with</span>(</span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>  corte_youden,</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>  sensitivity <span class="sc">+</span> specificity <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>limiar_youden <span class="ot">&lt;-</span> corte_youden<span class="sc">$</span>threshold[<span class="dv">1</span>]</span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>corte_youden</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          threshold sensitivity specificity  accuracy         J
+threshold 0.3637892   0.7802198   0.8360656 0.8175182 0.6162854</code></pre>
+</div>
+</div>
+<p>O ponto de corte selecionado foi aproximadamente <span class="math inline">\(0,364\)</span>, com <span class="math inline">\(J=0,616\)</span>. No treino, esse limiar identificou corretamente <span class="math inline">\(78,0\%\)</span> dos indivíduos com diabetes (sensibilidade) e <span class="math inline">\(83,6\%\)</span> daqueles sem diabetes (especificidade), resultando em acurácia de <span class="math inline">\(81,8\%\)</span>.</p>
+<p>Assim, indivíduos com probabilidade estimada de diabetes igual ou superior ao limiar selecionado são classificados como positivos e, os demais como negativos.</p>
+</section>
+</section>
+<section id="matriz-de-confusão" class="level2" data-number="4.8">
+<h2 data-number="4.8" class="anchored" data-anchor-id="matriz-de-confusão"><span class="header-section-number">4.8</span> Matriz de Confusão</h2>
+<p>A matriz de confusão e as métricas abaixo usam o ponto de corte escolhido pelo índice de Youden no treino.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>calcular_matriz <span class="ot">&lt;-</span> <span class="cf">function</span>(resposta, probabilidade, limiar) {</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  previsto <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(probabilidade <span class="sc">&gt;=</span> limiar)</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>(</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Observado =</span> <span class="fu">factor</span>(resposta, <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)),</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Previsto =</span> <span class="fu">factor</span>(previsto, <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>))</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>matriz_treino <span class="ot">&lt;-</span> <span class="fu">calcular_matriz</span>(treino<span class="sc">$</span>resposta, prob_treino, limiar_youden)</span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>matriz_teste <span class="ot">&lt;-</span> <span class="fu">calcular_matriz</span>(teste<span class="sc">$</span>resposta, prob_teste, limiar_youden)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<table class="caption-top table table-sm table-striped small">
+<caption>Matriz de confusão — treino</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Previsto</th>
+<th style="text-align: right;">Observado: 0</th>
+<th style="text-align: right;">Observado: 1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">0</td>
+<td style="text-align: right;">153</td>
+<td style="text-align: right;">20</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">71</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<table class="caption-top table table-sm table-striped small">
+<caption>Matriz de confusão — teste</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Previsto</th>
+<th style="text-align: right;">Observado: 0</th>
+<th style="text-align: right;">Observado: 1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">0</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">15</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">24</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Desempenho do modelo nos conjuntos de treino e teste</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Indicador</th>
+<th style="text-align: center;">Treino</th>
+<th style="text-align: center;">Teste</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Verdadeiros positivos (VP)</td>
+<td style="text-align: center;">71</td>
+<td style="text-align: center;">24</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Verdadeiros negativos (VN)</td>
+<td style="text-align: center;">153</td>
+<td style="text-align: center;">65</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Falsos positivos (FP)</td>
+<td style="text-align: center;">30</td>
+<td style="text-align: center;">14</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Falsos negativos (FN)</td>
+<td style="text-align: center;">20</td>
+<td style="text-align: center;">15</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sensibilidade</td>
+<td style="text-align: center;">78,0%</td>
+<td style="text-align: center;">61,5%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Especificidade</td>
+<td style="text-align: center;">83,6%</td>
+<td style="text-align: center;">82,3%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Acurácia</td>
+<td style="text-align: center;">81,8%</td>
+<td style="text-align: center;">75,4%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Precisão</td>
+<td style="text-align: center;">70,3%</td>
+<td style="text-align: center;">63,2%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Escore F1</td>
+<td style="text-align: center;">74,0%</td>
+<td style="text-align: center;">62,3%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="Como interpretar a matriz de confusão e suas medidas?">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Dica</span>Como interpretar a matriz de confusão e suas medidas?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Nesta aplicação, a classe positiva corresponde à <strong>presença de diabetes</strong> (<span class="math inline">\(Y=1\)</span>), e a negativa, à ausência de diabetes (<span class="math inline">\(Y=0\)</span>).</p>
+<p>No conjunto de teste, as classificações foram:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Classificação prevista</th>
+<th style="text-align: center;">Com diabetes (<span class="math inline">\(Y=1\)</span>)</th>
+<th style="text-align: center;">Sem diabetes (<span class="math inline">\(Y=0\)</span>)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Positiva</td>
+<td style="text-align: center;"><strong>VP = 24</strong></td>
+<td style="text-align: center;"><strong>FP = 14</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Negativa</td>
+<td style="text-align: center;"><strong>FN = 15</strong></td>
+<td style="text-align: center;"><strong>VN = 65</strong></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>VP — verdadeiro positivo:</strong> indivíduo com diabetes classificado como positivo.</li>
+<li><strong>VN — verdadeiro negativo:</strong> indivíduo sem diabetes classificado como negativo.</li>
+<li><strong>FP — falso positivo:</strong> indivíduo sem diabetes classificado como positivo.</li>
+<li><strong>FN — falso negativo:</strong> indivíduo com diabetes classificado como negativo.</li>
+</ul>
+<p><strong>Sensibilidade:</strong> entre os indivíduos com diabetes, qual proporção foi identificada corretamente?</p>
+<p><span class="math display">\[
+\text{Sensibilidade}=\frac{VP}{VP+FN}
+=\frac{24}{24+15}=61{,}5\%.
+\]</span></p>
+<p><strong>Especificidade:</strong> entre os indivíduos sem diabetes, qual proporção foi identificada corretamente?</p>
+<p><span class="math display">\[
+\text{Especificidade}=\frac{VN}{VN+FP}
+=\frac{65}{65+14}=82{,}3\%.
+\]</span></p>
+<p><strong>Acurácia:</strong> qual proporção de todas as classificações foi correta?</p>
+<p><span class="math display">\[
+\text{Acurácia}=\frac{VP+VN}{VP+VN+FP+FN}
+=\frac{24+65}{118}=75{,}4\%.
+\]</span></p>
+<p><strong>Precisão (valor preditivo positivo):</strong> entre os indivíduos classificados como positivos, qual proporção tinha diabetes?</p>
+<p><span class="math display">\[
+\text{Precisão}=\frac{VP}{VP+FP}
+=\frac{24}{24+14}=63{,}2\%.
+\]</span></p>
+<p><strong>F1:</strong> média harmônica entre precisão e sensibilidade, que resume essas duas medidas.</p>
+<p><span class="math display">\[
+F1=\frac{2VP}{2VP+FP+FN}
+=\frac{48}{48+14+15}=62{,}3\%.
+\]</span></p>
+</div>
+</div>
+<p>No conjunto de teste, o modelo apresentou acurácia de <span class="math inline">\(75,4\%\)</span>, inferior aos <span class="math inline">\(81,8\%\)</span> do treino. A sensibilidade diminuiu de <span class="math inline">\(78,0\%\)</span> para <span class="math inline">\(61,5\%\)</span>, enquanto a especificidade permaneceu próxima (<span class="math inline">\(83,6\%\)</span> e <span class="math inline">\(82,3\%\)</span>, respectivamente). Assim, com o corte adotado, o modelo classificou corretamente <span class="math inline">\(82,3\%\)</span> dos indivíduos sem diabetes e <span class="math inline">\(61,5\%\)</span> daqueles com diabetes no teste, identificando melhor os indivíduos sem diabetes do que aqueles com diabetes.</p>
+</section>
+<section id="teste-de-kolmogorovsmirnov-ks" class="level2" data-number="4.9">
+<h2 data-number="4.9" class="anchored" data-anchor-id="teste-de-kolmogorovsmirnov-ks"><span class="header-section-number">4.9</span> Teste de Kolmogorov–Smirnov (KS)</h2>
+<p><strong>Capacidade discriminatória.</strong> O teste de Kolmogorov-Smirnov (KS) avalia a capacidade discriminatória do modelo, isto é, sua habilidade de distinguir indivíduos com diabetes (<span class="math inline">\(Y=1\)</span>) daqueles sem diabetes (<span class="math inline">\(Y=0\)</span>).</p>
+<p>Como medida complementar, comparamos as distribuições das probabilidades previstas para os grupos com diabetes (<span class="math inline">\(Y=1\)</span>) e sem diabetes (<span class="math inline">\(Y=0\)</span>), separadamente no treino e no teste. A estatística <span class="math inline">\(D\)</span> corresponde à maior distância entre as distribuições acumuladas. O teste KS é frequente em aplicações de risco de crédito e está relacionado à separação máxima resumida pelo índice de Youden, portanto, traz informação parcialmente sobreposta à curva ROC.</p>
+<p>O valor-<span class="math inline">\(p\)</span> avalia se as distribuições diferem, mas não demonstra, isoladamente, um bom desempenho preditivo. Além disso, como as probabilidades previstas podem apresentar empates, indica-se usar valores-p assintóticos, que devem ser interpretados com cautela.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>ks_treino <span class="ot">&lt;-</span> stats<span class="sc">::</span><span class="fu">ks.test</span>(</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> prob_treino[treino<span class="sc">$</span>resposta <span class="sc">==</span> <span class="dv">1</span>],</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> prob_treino[treino<span class="sc">$</span>resposta <span class="sc">==</span> <span class="dv">0</span>],</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">exact =</span> <span class="cn">FALSE</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>ks_teste <span class="ot">&lt;-</span> stats<span class="sc">::</span><span class="fu">ks.test</span>(</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> prob_teste[teste<span class="sc">$</span>resposta <span class="sc">==</span> <span class="dv">1</span>],</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> prob_teste[teste<span class="sc">$</span>resposta <span class="sc">==</span> <span class="dv">0</span>],</span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">exact =</span> <span class="cn">FALSE</span></span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(</span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">Conjunto =</span> <span class="fu">c</span>(<span class="st">"Treino"</span>, <span class="st">"Teste"</span>),</span>
+<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">D =</span> <span class="fu">c</span>(<span class="fu">unname</span>(ks_treino<span class="sc">$</span>statistic), <span class="fu">unname</span>(ks_teste<span class="sc">$</span>statistic)),</span>
+<span id="cb45-16"><a href="#cb45-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">valor_p =</span> <span class="fu">c</span>(ks_treino<span class="sc">$</span>p.value, ks_teste<span class="sc">$</span>p.value)</span>
+<span id="cb45-17"><a href="#cb45-17" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 3
+  Conjunto     D  valor_p
+  &lt;chr&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+1 Treino   0.616 1.78e-20
+2 Teste    0.555 2.03e- 7</code></pre>
+</div>
+</div>
+<p>Os resultados do teste de Kolmogorov–Smirnov indicaram diferenças estatisticamente significativas entre as distribuições das probabilidades previstas para os grupos com e sem diabetes, tanto no conjunto de treino (<span class="math inline">\(D = 0{,}616, p = 1{,}78 \times 10^{-20}\)</span>) quanto no de teste (<span class="math inline">\(D = 0{,}555, p = 2{,}03 \times 10^{-7}\)</span>), evidenciando a capacidade discriminatória do modelo reduzido.</p>
+<p><br><br></p>
+</section>
+</section>
+<section id="referências" class="level1 unnumbered">
+<h1 class="unnumbered">REFERÊNCIAS</h1>
+<p>CORDEIRO, G. M.; DEMÉTRIO, C. G. B. Modelos lineares generalizados e extensões. Piracicaba: USP, 2008. Disponível em: <a href="https://www2.ufjf.br/clecio_ferreira/files/2013/05/Livro-Gauss-e-Clarice.pdf" class="uri">https://www2.ufjf.br/clecio_ferreira/files/2013/05/Livro-Gauss-e-Clarice.pdf</a></p>
+<p>LEISCH, F.; DIMITRIADOU, E. <strong>mlbench: Machine Learning Benchmark Problems</strong>. Documentação do conjunto de dados <code>BreastCancer</code>. Disponível em: <a href="https://rdrr.io/cran/mlbench/man/BreastCancer.html" class="uri">https://rdrr.io/cran/mlbench/man/BreastCancer.html</a>. Acesso em: 17 out. 2026.</p>
+<p>NAGELKERKE, N. J. D. A note on a general definition of the coefficient of determination. Biometrika, v. 78, n.&nbsp;3, p.&nbsp;691–692, 1991. https://doi.org/10.1093/biomet/78.3.691.</p>
+<p>SHEATHER, S. <strong>A modern approach to regression with R</strong>. New York: Springer, 2009.</p>
+<p>SOLYMOS, P. <strong>hoslem.test: Hosmer–Lemeshow Goodness of Fit (GOF) Test</strong>. Documentação do pacote <code>ResourceSelection</code>. Disponível em: <a href="https://peter.solymos.org/ResourceSelection/reference/hoslem.test.html" class="uri">https://peter.solymos.org/ResourceSelection/reference/hoslem.test.html</a>. Acesso em: 16 out. 2026.</p>
+<p>UCI MACHINE LEARNING REPOSITORY. <strong>Breast Cancer Wisconsin (Original)</strong>. Disponível em: <a href="https://archive.ics.uci.edu/dataset/15/breast+cancer+wisconsin+original" class="uri">https://archive.ics.uci.edu/dataset/15/breast+cancer+wisconsin+original</a>. Acesso em: 12 out. 2026.</p>
+<p>WEISBERG, S. <strong>Applied linear regression</strong>. 3. ed.&nbsp;Hoboken: Wiley, 2005.</p>
+<script src="navegacao.js"></script>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copiada");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copiada");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<script src="APLogistica_files/libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
